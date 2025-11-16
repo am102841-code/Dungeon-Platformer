@@ -140,6 +140,16 @@ class coin_animation():
 # When player collides --> coin dissapears and score goes up by 1
 
 
+class TitleAnimation(): 
+  def __init__(self, text, x, y, color, color_change):
+    self.text = 'Platformer'
+    self.x = x 
+
+
+
+
+
+
 class Coin():
     def select_color(self):
         self.color = pygame.Color(random.randint(0,255), random.randint(0,255),  random.randint(0,255))
