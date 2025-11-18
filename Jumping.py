@@ -53,7 +53,8 @@ class Player():
         self.vel_y = 0
         self.vel_x = 0
         self.player_now = self.player_image
-        self.jump_strength = -21.5
+        #self.jump_strength = -21.5
+        self.jump_strength = -20 
         self.gravity = 1
         self.jump_speed = 0
         self.move_speed = 4
@@ -139,9 +140,22 @@ class coin_animation():
 # When player collides --> coin dissapears and score goes up by 1
 
 
+class TitleAnimation(): 
+  def __init__(self, text, x, y, color, color_change):
+    self.text = 'Platformer'
+    self.x = x 
+    self.y = y 
+    self.color = color 
+    self.color_change = color_change 
+
+
+
+
+
+
 class Coin():
     def select_color(self):
-        self.color = pygame.Color( random.randint(0,255), random.randint(0,255),  random.randint(0,255))
+        self.color = pygame.Color(random.randint(0,255), random.randint(0,255),  random.randint(0,255))
 
     def __init__(self, x, y):
         self.x = x
@@ -243,6 +257,8 @@ def main():
     enemy = Enemy()
     ob2X = random.randint(550, 575)
     ob2Y = random.randint(250, 275)
+
+    # level 1 obstacles
     ob1 = pygame.Rect(random.randint(290, 350), random.randint(395, 425), random.randint(125, 175), 50)
     ob2 = pygame.Rect(ob2X , ob2Y,  random.randint(125, 175), 50)
     ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
@@ -358,11 +374,23 @@ def main():
                 player.player_image.blit(colorImage, (player.x, player.y), special_flags= pygame.BLEND_RGBA_MULT)
 
 
-            if player.hitbox.colliderect(portal_hitbox):
+            if player.hitbox.colliderect(portal_hitbox) and level == 1:
                 player.player_reset = True
                 level = 2
                 level_changing = True
                 level_counter1.set_number(int(level))
+            elif player.hitbox.colliderect(portal_hitbox) and (level == 2 or level == 'secret'):
+                player.player_reset = True
+                level = 3
+                level_changing = True
+                level_counter1.set_number(int(level))
+            elif player.hitbox.colliderect(portal_hitbox) and level == 3:
+                player.player_reset = True
+                level = 4
+                level_changing = True
+                level_counter1.set_number(int(level))
+
+
 
 
             if level == 2 and level_changing:
@@ -424,8 +452,6 @@ def main():
                     player.y = 500
                     player.player_reset = False
 
-
-
                 ob1 = pygame.Rect(200, 450, 100, 50)
                 ob2 = pygame.Rect(500 - 25, 350, 150, 50)
                 ob3 = pygame.Rect(600 + 75, 250 - 50, 50, 50)
@@ -484,6 +510,83 @@ def main():
             if level == "secret" and not level_changing:
                 horizontal_collision(player, obstacle_list)
 
+            # level 3 
+            if level == 3 and level_changing == True:
+                level_changing = False
+
+                # setting screen and background sizes less from the secret level
+                WINDOW = pygame.display.set_mode((800, 600))
+                background = pygame.transform.scale(background, (800, 600))
+
+                if player.player_reset == True:
+                    player.x = 100
+                    player.y = 500
+                    player.player_reset = False
+
+                #ob1 = pygame.Rect(x, y, width, height)
+                ob1 = pygame.Rect(200, 400, 200, 50) # long platform with spike1
+                ob2 = pygame.Rect(450, 290, 50, 50)
+                ob3 = pygame.Rect(330, 175, 50, 50)
+                ob4 = pygame.Rect(550, 175, 160, 50)
+                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
+                
+                spike1 = (280, 350, 25, 25)
+                spike2 = (550 + 75, 150 + 25 - 50, 50, 50)
+                
+                
+                coin_list = []
+                spike_position_list = [spike1, spike2] 
+                obstacle_list = [ob1, ob2, ob3, ob4, ground]
+                
+
+                new_coin1 = Coin(ob3.left + ob3.width / 2 - 25, ob3.top - 25)
+                new_coin1.randomize_pos()
+                coin_list.append(new_coin1)
+                
+                new_coin2 = Coin(ob1.left + ob1.width / 2 - 65, ob1.top - 25)
+                new_coin2.randomize_pos()
+                coin_list.append(new_coin2)
+                
+                
+      
+            # level 4 
+            if level == 4 and level_changing == True:
+                level_changing = False
+
+                # setting screen and background sizes less from the secret level
+                WINDOW = pygame.display.set_mode((800, 600))
+                background = pygame.transform.scale(background, (800, 600))
+
+                if player.player_reset == True:
+                    player.x = 100
+                    player.y = 500
+                    player.player_reset = False
+
+                ob1 = pygame.Rect(200 + 450, 450, 100, 50) # keep 
+                ob2 = pygame.Rect(350 + 25, 450 - 75, 75, 50) # keep 
+                ob3 = pygame.Rect(600 + 75, 250 - 50, 50, 50)
+                ob4 = pygame.Rect(700, 200, 50, 50)
+                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
+
+                coin_list = []
+                spike_position_list = []
+                obstacle_list = [ob1, ob2, ob3, ob4, ground]
+
+                new_coin = Coin(ground.left + ground.width / 2, ground.top - 25)
+                new_coin.randomize_pos()
+                coin_list.append(new_coin)
+                
+                new_coin2 = Coin(ground.left + ground.width / 2 - 350, ground.top - 25)
+                new_coin2.randomize_pos()
+                coin_list.append(new_coin2)
+                
+                new_coin3 = Coin(ob2.left + ob2.width / 2, ob2.top - 25)
+                new_coin3.randomize_pos()
+                coin_list.append(new_coin3)
+
+
+
+
             horizontal_collision(player, obstacle_list)
             spike.collisions(player, spike_position_list)
 
@@ -491,6 +594,9 @@ def main():
 
             player.hitbox.top = player.y
             player.hitbox.left = player.x
+
+
+
 
             # Vertical Collision
             player.on_ground = False
@@ -541,8 +647,11 @@ def main():
                 portal_x = 680 + 250
                 portal_y = 100 - 23.5
                 portal_hitbox.topleft = (portal_x, portal_y)
+                pygame.draw.rect(WINDOW, (0, 0, 0), portal_hitbox)
                 for x in obstacle_list:
                     pygame.draw.rect(WINDOW, (0, 0, 0), x)
+            if level == 4: 
+              portal_y -= 75 
 
             for y in spike_position_list:
                 WINDOW.blit(spike_1.image, y)
