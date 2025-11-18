@@ -141,13 +141,15 @@ class coin_animation():
 
 
 class TitleAnimation(): 
-  def __init__(self, text, x, y, color, color_change):
+  def __init__(self, text, x, y, color, color_change, starting_color, speed, reverse):
     self.text = 'Platformer'
     self.x = x 
     self.y = y 
     self.color = color 
     self.color_change = color_change 
-
+    self.starting_color = starting_color 
+    self.speed = speed 
+    self.reverse = False 
 
 
 
