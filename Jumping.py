@@ -397,7 +397,19 @@ def main():
           x = WINDOW.get_width()/ 2 - Title.get_width() / 2 + 80 - 75 
           y = 25 + 100 + 50
           WINDOW.blit(para, (x, y))
+          
+        
+          # Exit Button
+          exit_button = button(600, 500 - 75, 100, 100, 'orange', 'exit', None)
+          exit_button.render_button()
+          exitfontobj = pygame.font.Font(None, 32)
 
+          # Exit Button text
+          ExitText = exitfontobj.render("Exit", True, TEXT_COLOR, None)
+          x = 600 + 50 - 25
+          y = 500 - 75 + 50 - 25 + 15
+
+          WINDOW.blit(ExitText, (x, y))
 
         elif game_state == 'gameplay':
             # for testing
