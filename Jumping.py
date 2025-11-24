@@ -23,6 +23,7 @@ BACKGROUND = (255, 255, 255)
 OBSTACLE_COLOR = (0,0,0)
 PLAYER_COLOR = (0,199,255)
 TEXT_COLOR = (200, 100, 0)
+CREATOR_COLOR = (153, 204, 255)
 
 # Game Setup
 FPS = 60
@@ -37,9 +38,9 @@ pygame.display.set_caption('Platformer')
 
 clock = pygame.time.Clock()
 
-background = pygame.image.load('image (2).png').convert_alpha()
+background = pygame.image.load('background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
-
+platform = pygame.image.load('Platform.png').convert_alpha()
 
 
 
@@ -53,7 +54,8 @@ class Player():
         self.vel_y = 0
         self.vel_x = 0
         self.player_now = self.player_image
-        self.jump_strength = -21.5
+        #self.jump_strength = -21.5
+        self.jump_strength = -20 
         self.gravity = 1
         self.jump_speed = 0
         self.move_speed = 4
@@ -88,7 +90,7 @@ class spike():
         #moving hitbox to middle, making it thin and keeping same height
 
 
-    def collisions(player, spike_list):
+    def collisions(self, player, spike_list):
         for spike in spike_list:
             if player.hitbox.colliderect(spike):
                 if player.facing_left:
@@ -139,9 +141,24 @@ class coin_animation():
 # When player collides --> coin dissapears and score goes up by 1
 
 
+class TitleAnimation(): 
+  def __init__(self, text, x, y, color, color_change, starting_color, speed, reverse):
+    self.text = 'Platformer'
+    self.x = x 
+    self.y = y 
+    self.color = color 
+    self.color_change = color_change 
+    self.starting_color = starting_color 
+    self.speed = speed 
+    self.reverse = False 
+
+
+
+
+
 class Coin():
     def select_color(self):
-        self.color = pygame.Color( random.randint(0,255), random.randint(0,255),  random.randint(0,255))
+        self.color = pygame.Color(random.randint(0,255), random.randint(0,255),  random.randint(0,255))
 
     def __init__(self, x, y):
         self.x = x
@@ -243,6 +260,8 @@ def main():
     enemy = Enemy()
     ob2X = random.randint(550, 575)
     ob2Y = random.randint(250, 275)
+
+    # level 1 obstacles
     ob1 = pygame.Rect(random.randint(290, 350), random.randint(395, 425), random.randint(125, 175), 50)
     ob2 = pygame.Rect(ob2X , ob2Y,  random.randint(125, 175), 50)
     ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
@@ -293,28 +312,47 @@ def main():
     while looping:
 
         if game_state == 'gameMenu':
-
             mouseClicked = False
-
+            '''
+            background_img = pygame.image.load("BlueBackground.png").convert_alpha()
+            background_img = pygame.transform.scale(background_img, (800, 600))
+            WINDOW.blit(background_img, (0, 0))
+            '''
             WINDOW.fill('light blue')
             fontObj = pygame.font.Font(None, 64)
             PlatformerText = fontObj.render("Platformer", True, TEXT_COLOR, None)
             WINDOW.blit(PlatformerText, (WINDOW.get_width()/ 2 - PlatformerText.get_width() / 2, WINDOW.get_height() / 2 - 45 - PlatformerText.get_height() / 2))
+            
             # Test Button
             test_button = button(0, 0, 100, 100, 'orange', 'hello', None)
             #test_button.render_button()
 
 
             # Start Button
-            start_button = button(WINDOW.get_width()/ 2 - 50, WINDOW.get_height() / 2, 100, 100, 'orange', 'start', None)
+            start_button = button(WINDOW.get_width()/ 2 - 50 - 100, WINDOW.get_height() / 2, 100, 100, 'orange', 'start', None)
             start_button.render_button()
             startfontobj = pygame.font.Font(None, 32)
 
             # Start Button text
             StartText = startfontobj.render("Start", True, TEXT_COLOR, None)
-            x = WINDOW.get_width()/ 2 - PlatformerText.get_width() / 2 + 80
+            x = WINDOW.get_width()/ 2 - PlatformerText.get_width() / 2 + 80 - 150 + 50 
             y = WINDOW.get_height() / 2 - 45 - PlatformerText.get_height() / 2 + 100
+                        
+
+            
             WINDOW.blit(StartText, (x, y))
+
+            # About the creator button 
+            atc_button = button(WINDOW.get_width()/ 2 - 50  + 78, WINDOW.get_height() / 2, 100, 100, 'orange', 'Creator', None)
+            atc_button.render_button()
+            atcfontobj = pygame.font.Font(None, 32)
+            
+            # atc button text 
+            atcText = atcfontobj.render("Creator", True, TEXT_COLOR, None)
+            x = WINDOW.get_width()/ 2 - atcText.get_width() / 2 + 80 
+            y = WINDOW.get_height() / 2 - 45 - atcText.get_height() / 2 + 100 - 10
+            WINDOW.blit(atcText, (x, y))
+            
 
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONUP:
@@ -324,10 +362,92 @@ def main():
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 if start_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked == True:
                     game_state = 'gameplay'
+                if atc_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked == True:
+                    game_state = 'creator'
                 if event.type == pygame.QUIT:
                     exit()
 
+        # Creator Page 
+        elif game_state == 'creator': 
+          #mouseClicked = False 
+          WINDOW.fill(CREATOR_COLOR)
+          
+          Titlefontobj = pygame.font.Font(None, 64)
+          
+          # text 
+          Title = Titlefontobj.render("About the Creator: Ankitha Mukund", True, TEXT_COLOR, None)
+          # perfect placement and text size 
+          x = WINDOW.get_width()/ 2 - Title.get_width() / 2 + 80 - 75 
+          y = 25
+          WINDOW.blit(Title, (x, y))
+          
+          # loading computer img  
+          img = pygame.image.load("computah.jpeg").convert_alpha() 
+          img = pygame.transform.scale(img, (200, 200))
+          WINDOW.blit(img, (550 + 50, 100))
+          
+          para_text = "Hi, I am the creator of this platformer, Ankitha."
+          font = pygame.font.Font(None, 32) 
+          para = font.render(para_text, True, TEXT_COLOR, None)
+          x = WINDOW.get_width()/ 2 - Title.get_width() / 2 + 80 - 75 
+          y = 25 + 100
+          WINDOW.blit(para, (x, y))
+          
+          para_text = "First off, I would like to thank my playtester, Architha."
+          font = pygame.font.Font(None, 32) 
+          para = font.render(para_text, True, TEXT_COLOR, None)
+          x = WINDOW.get_width()/ 2 - Title.get_width() / 2 + 80 - 75 
+          y = 25 + 100 + 50
+          WINDOW.blit(para, (x, y))
+          
+          para_text = "I have worked on this game for about 1.5 years."
+          font = pygame.font.Font(None, 32) 
+          para = font.render(para_text, True, TEXT_COLOR, None)
+          x = WINDOW.get_width()/ 2 - Title.get_width() / 2 + 80 - 75 
+          y = 25 + 100 + 50 + 50 
+          WINDOW.blit(para, (x, y))
+          
+          para_text = "Over time, I have made many additions, and some"
+          font = pygame.font.Font(None, 32) 
+          para = font.render(para_text, True, TEXT_COLOR, None)
+          x = WINDOW.get_width()/ 2 - Title.get_width() / 2 + 80 - 75 
+          y = 25 + 100 + 50 + 50 + 50 
+          WINDOW.blit(para, (x, y))
+          
+          para_text = "include gravity, collisions, classes, and a score counter."
+          font = pygame.font.Font(None, 32) 
+          para = font.render(para_text, True, TEXT_COLOR, None)
+          x = WINDOW.get_width()/ 2 - Title.get_width() / 2 + 80 - 75 
+          y = 25 + 100 + 50 + 200 - 50 
+          WINDOW.blit(para, (x, y))
+        
+          # Exit Button
+          exit_button = button(600, 500 - 75, 100, 100, 'orange', 'exit', None)
+          exit_button.render_button()
+          exitfontobj = pygame.font.Font(None, 32)
 
+          # Exit Button text
+          ExitText = exitfontobj.render("Exit", True, TEXT_COLOR, None)
+          x = 600 + 50 - 25
+          y = 500 - 75 + 50 - 25 + 15
+
+          WINDOW.blit(ExitText, (x, y))
+          
+          mouseClicked = False
+
+          for event in pygame.event.get():
+              # if clicked 
+              if event.type == pygame.MOUSEBUTTONDOWN:
+                  mouseClicked = True
+              if event.type == pygame.QUIT:
+                  pygame.quit()
+                  sys.exit()
+          
+          mouse_x, mouse_y = pygame.mouse.get_pos()
+          
+          # Check EXIT button click
+          if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+              game_state = 'gameMenu'
 
 
         elif game_state == 'gameplay':
@@ -358,11 +478,23 @@ def main():
                 player.player_image.blit(colorImage, (player.x, player.y), special_flags= pygame.BLEND_RGBA_MULT)
 
 
-            if player.hitbox.colliderect(portal_hitbox):
+            if player.hitbox.colliderect(portal_hitbox) and level == 1:
                 player.player_reset = True
                 level = 2
                 level_changing = True
                 level_counter1.set_number(int(level))
+            elif player.hitbox.colliderect(portal_hitbox) and (level == 2 or level == 'secret'):
+                player.player_reset = True
+                level = 3
+                level_changing = True
+                level_counter1.set_number(int(level))
+            elif player.hitbox.colliderect(portal_hitbox) and level == 3:
+                player.player_reset = True
+                level = 4
+                level_changing = True
+                level_counter1.set_number(int(level))
+
+
 
 
             if level == 2 and level_changing:
@@ -424,8 +556,6 @@ def main():
                     player.y = 500
                     player.player_reset = False
 
-
-
                 ob1 = pygame.Rect(200, 450, 100, 50)
                 ob2 = pygame.Rect(500 - 25, 350, 150, 50)
                 ob3 = pygame.Rect(600 + 75, 250 - 50, 50, 50)
@@ -484,13 +614,91 @@ def main():
             if level == "secret" and not level_changing:
                 horizontal_collision(player, obstacle_list)
 
+            # level 3 
+            if level == 3 and level_changing == True:
+                level_changing = False
+
+                # setting screen and background sizes less from the secret level
+                WINDOW = pygame.display.set_mode((800, 600))
+                background = pygame.transform.scale(background, (800, 600))
+
+                if player.player_reset == True:
+                    player.x = 100
+                    player.y = 500
+                    player.player_reset = False
+
+                #ob1 = pygame.Rect(x, y, width, height)
+                ob1 = pygame.Rect(200, 400, 200, 50) # long platform with spike1
+                ob2 = pygame.Rect(450, 290, 50, 50)
+                ob3 = pygame.Rect(330, 175, 50, 50)
+                ob4 = pygame.Rect(550, 175, 160, 50)
+                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
+                
+                spike1 = (280, 350, 25, 25)
+                spike2 = (550 + 75, 150 + 25 - 50, 50, 50)
+                
+                
+                coin_list = []
+                spike_position_list = [spike1, spike2] 
+                obstacle_list = [ob1, ob2, ob3, ob4, ground]
+                
+
+                new_coin1 = Coin(ob3.left + ob3.width / 2 - 25, ob3.top - 25)
+                new_coin1.randomize_pos()
+                coin_list.append(new_coin1)
+                
+                new_coin2 = Coin(ob1.left + ob1.width / 2 - 65, ob1.top - 25)
+                new_coin2.randomize_pos()
+                coin_list.append(new_coin2)
+                
+                
+      
+            # level 4 
+            if level == 4 and level_changing == True:
+                level_changing = False
+
+                # setting screen and background sizes less from the secret level
+                WINDOW = pygame.display.set_mode((800, 600))
+                background = pygame.transform.scale(background, (800, 600))
+
+                if player.player_reset == True:
+                    player.x = 100
+                    player.y = 500
+                    player.player_reset = False
+
+                ob1 = pygame.Rect(200, 450, 100, 50)
+                ob2 = pygame.Rect(500 - 25, 350, 150, 50)
+                ob3 = pygame.Rect(600 + 75, 250 - 50, 50, 50)
+                ob4 = pygame.Rect(700, 200, 50, 50)
+                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
+
+                coin_list = []
+                spike_position_list = []
+                obstacle_list = [ob1, ob2, ob3, ob4, ground]
+
+                new_coin = Coin(ground.left + ground.width / 2, ground.top - 25)
+                new_coin.randomize_pos()
+                coin_list.append(new_coin)
+                
+                new_coin2 = Coin(ground.left + ground.width / 2 - 350, ground.top - 25)
+                new_coin2.randomize_pos()
+                coin_list.append(new_coin2)
+
+
+
+
             horizontal_collision(player, obstacle_list)
-            spike.collisions(player, spike_position_list)
+            for sp in [spike_1, spike_2]:
+              sp.collisions(player, spike_position_list)
+
 
             player.vel_y += player.gravity
 
             player.hitbox.top = player.y
             player.hitbox.left = player.x
+
+
+
 
             # Vertical Collision
             player.on_ground = False
@@ -532,8 +740,10 @@ def main():
             #if 640 <  player
 
             WINDOW.blit(background, (0,0))
-            for x in obstacle_list:
-                pygame.draw.rect(WINDOW, OBSTACLE_COLOR, x)
+            for rect in obstacle_list:
+                #pygame.draw.rect(WINDOW, OBSTACLE_COLOR, x)
+                platform_img = pygame.transform.scale(platform, (rect.width, rect.height))
+                WINDOW.blit(platform_img, rect.topleft)
 
             if level == 2:
                 pygame.draw.rect(WINDOW, (0, 0, 0), ob7)
@@ -541,11 +751,15 @@ def main():
                 portal_x = 680 + 250
                 portal_y = 100 - 23.5
                 portal_hitbox.topleft = (portal_x, portal_y)
+                pygame.draw.rect(WINDOW, (0, 0, 0), portal_hitbox)
                 for x in obstacle_list:
                     pygame.draw.rect(WINDOW, (0, 0, 0), x)
 
             for y in spike_position_list:
                 WINDOW.blit(spike_1.image, y)
+
+            for sp in spike_list: 
+                sp.collisions(player, spike_position_list)
 
             for coin in coin_list:
                 coin.render_coin()
