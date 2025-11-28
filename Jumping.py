@@ -10,6 +10,7 @@ pygame.init()
 # finished level counter 9/17
 # made coins w/ random coins 9/17
 # score counter 10/1
+# helathbar 11/28
 
 # Make levels and fix attack animation
 # First Level --> random generated position of obstacles
@@ -413,8 +414,23 @@ def main():
                 if event.type == pygame.QUIT:
                     exit()
 
-        elif game_state == 'tutorial_level': 
-            pass 
+        elif game_state == 'tutorial_level':
+            WINDOW.fill('lightblue')
+            player.x = 100
+            player.y = 500
+
+            ob1 = pygame.Rect(100, 100, 100, 50)
+            ob2 = pygame.Rect(300, 100, 50, 50)
+
+            ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
+            obstacle_list = [ob1, ob2, ground]
+
+            for ob in obstacle_list:
+                pass
+                #platform_img = pygame.transform.scale(platform_img, (ob.width, ob.height))
+                #WINDOW.blit(platform_img, ob.topleft)
+                #pygame.draw.rect(WINDOW, (0, 0, 0), ob)
+
         elif game_state == 'tutorial':
             WINDOW.fill('lightblue')
             Titlefontobj = pygame.font.Font(None, 64)
