@@ -421,15 +421,19 @@ def main():
 
             ob1 = pygame.Rect(100, 100, 100, 50)
             ob2 = pygame.Rect(300, 100, 50, 50)
+            spike1 = spike(500, 300, 50, 50)
 
             ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
             obstacle_list = [ob1, ob2, ground]
+            spike_position_list(spike1)
+
+            for spike in spike_position_list:
+                WINDOW.blit(spike1.image, spike)
 
             for ob in obstacle_list:
-                pass
                 #platform_img = pygame.transform.scale(platform_img, (ob.width, ob.height))
                 #WINDOW.blit(platform_img, ob.topleft)
-                #pygame.draw.rect(WINDOW, (0, 0, 0), ob)
+                pygame.draw.rect(WINDOW, (129, 129, 129), ob)
 
         elif game_state == 'tutorial':
             WINDOW.fill('lightblue')
