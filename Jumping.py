@@ -10,7 +10,8 @@ pygame.init()
 # finished level counter 9/17
 # made coins w/ random coins 9/17
 # score counter 10/1
-# helathbar 11/28
+# health bar 11/28
+# tutorial level completed 11/28
 
 # Make levels and fix attack animation
 # First Level --> random generated position of obstacles
@@ -292,7 +293,7 @@ def main():
     enemy = Enemy()
     ob2X = random.randint(550, 575)
     ob2Y = random.randint(250, 275)
-
+    obstacle_list = []
     # level 1 obstacles
     ob1 = pygame.Rect(290, 395 + 15, 100, 50)
     ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
@@ -441,6 +442,7 @@ def main():
                     mouse_pos = pygame.mouse.get_pos()
                     if exit_button_rect.collidepoint(mouse_pos):
                         game_state = 'gameMenu'
+                        level = 1
 
 
             WINDOW.fill('lightblue')
@@ -717,6 +719,12 @@ def main():
                 level = 5
                 level_changing = True
                 level_counter1.set_number(int(level))
+            elif player.hitbox.colliderect(portal_hitbox) and level == 5:
+                player.player_reset = True
+                level = 6
+                level_changing = True
+                level_counter1.set_number(int(level))
+
 
             # Level 2
             if level == 2 and level_changing:
@@ -929,6 +937,7 @@ def main():
                 coin1.randomize_pos()
                 coin_list.append(coin2)
 
+            # level 5
             if level == 5 and level_changing == True:
                 level_changing = False
 
@@ -940,6 +949,40 @@ def main():
                     player.x = 100
                     player.y = 500
                     player.player_reset = False
+
+                ob1 = pygame.Rect(200, 425, 100, 50)
+                ob2 = pygame.Rect(250 + 25, 225 + 50 + 30, 50, 50) # filled with grey
+                ob3 = pygame.Rect(ob2.x + 40 + 75, ob2.y - 75 + 35, 125, 50)
+                ob4 = pygame.Rect(ob3.x + 100 + 50, ob3.y - 75, 50, 50) # filled with grey
+                ob5 = pygame.Rect(ob4.x + 75 + 75, ob4.y, 50, 50) # filled with grey
+                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
+
+                spike1 = (ob3.x + 20, ob3.y - ob3.height, 25, 25)
+                spike2 = (800-150 - 25, 200 - 100, 25, 25)
+
+                obstacle_list = [ob1, ob2, ob3, ob4, ob5, ground]
+                spike_position_list = [spike1, spike2]
+                coin_list = []
+
+            # level 6
+            if level == 6 and level_changing == True:
+                level_changing = False
+
+                # setting screen and background sizes less from the secret level
+                WINDOW = pygame.display.set_mode((800, 600))
+                background = pygame.transform.scale(background, (800, 600))
+
+                if player.player_reset == True:
+                    player.x = 100
+                    player.y = 500
+                    player.player_reset = False
+
+                ob1 = pygame.Rect(200, 425, 100, 50)
+                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
+
+                obstacle_list = [ob1, ground]
+                spike_position_list = []
+                coin_list = []
 
             horizontal_collision(player, obstacle_list)
             for sp in [spike_1, spike_2]:
@@ -1015,6 +1058,10 @@ def main():
                 if level == 4:
                     if rect == ob3 or rect == ob4 or rect == ob5 or rect == ob6:
                         platform_img.fill((128, 128, 128))
+
+                if level == 5:
+                    if rect == ob2 or rect == ob4 or rect == ob5:
+                        platform_img.fill((128, 128, 128))
                 WINDOW.blit(platform_img, rect.topleft)
 
             if level == 2:
@@ -1042,6 +1089,10 @@ def main():
                 portal_x = WINDOW_WIDTH - 75 - 20 - 400
                 portal_y = 50
                 portal_hitbox.topleft = (portal_x, portal_y)
+            if level == 5:
+                portal_x = WINDOW_WIDTH - 95
+                portal_y = 50
+                portal_hitbox.topleft = (portal_x, portal_y)
 
             for y in spike_position_list:
                 WINDOW.blit(spike_1.image, y)
@@ -1057,6 +1108,7 @@ def main():
                 player.health = player.max_health
                 player.x = 100
                 player.y = 500
+                level = 1
 
             # WINDOW.fill(PLAYER_COLOR, player)
             WINDOW.blit(player.player_now, (player.x, player.y))
