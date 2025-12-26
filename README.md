@@ -10,6 +10,15 @@ Each level features **unique dungeon music**, with tracks that change from **lev
 👉 **Play here:**  
 https://platformer-webpage--am102841.replit.app/
 
+**How to play**
+
+Use arrow keys and spacebar to move around 
+
+Go into the portal to enter the next level 
+
+Avoid spikes as they cause health to decrease 
+
+
 ---
 
 ## 🧩 Features
