@@ -27,6 +27,7 @@ OBSTACLE_COLOR = (0, 0, 0)
 PLAYER_COLOR = (0, 199, 255)
 TEXT_COLOR = (200, 100, 0)
 CREATOR_COLOR = (153, 204, 255)
+GREY = (224, 224, 224)
 
 # Game Setup
 FPS = 60
@@ -44,6 +45,7 @@ clock = pygame.time.Clock()
 background = pygame.image.load('background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
 platform = pygame.image.load('PLATFORM.png').convert_alpha()
+
 
 # music
 pygame.mixer.music.load("music.mp3")
@@ -321,14 +323,14 @@ def main():
 
         if game_state == 'gameMenu':
             mouseClicked = False
-            '''
-            background_img = pygame.image.load("BlueBackground.png").convert_alpha()
+
+            background_img = pygame.image.load('game_menu.png').convert_alpha()
             background_img = pygame.transform.scale(background_img, (800, 600))
             WINDOW.blit(background_img, (0, 0))
-            '''
-            WINDOW.fill('light blue')
+
+            #WINDOW.fill('light blue')
             fontObj = pygame.font.Font(None, 64)
-            PlatformerText = fontObj.render("Platformer", True, TEXT_COLOR, None)
+            PlatformerText = fontObj.render("Dungeon Platformer", True, GREY, None)
             WINDOW.blit(PlatformerText, (WINDOW.get_width() / 2 - PlatformerText.get_width() / 2,
                                          WINDOW.get_height() / 2 - 45 - PlatformerText.get_height() / 2))
 
@@ -337,26 +339,26 @@ def main():
             # test_button.render_button()
 
             # Start Button
-            start_button = button(WINDOW.get_width() / 2 - 50 - 100, WINDOW.get_height() / 2, 100, 100, 'orange',
+            start_button = button(WINDOW.get_width() / 2 - 50 - 100, WINDOW.get_height() / 2, 100, 100, (160, 160, 160),
                                   'start', None)
             start_button.render_button()
             startfontobj = pygame.font.Font(None, 32)
 
             # Start Button text
-            StartText = startfontobj.render("Start", True, TEXT_COLOR, None)
-            x = WINDOW.get_width() / 2 - PlatformerText.get_width() / 2 + 80 - 150 + 50
-            y = WINDOW.get_height() / 2 - 45 - PlatformerText.get_height() / 2 + 100
+            StartText = startfontobj.render("Start", True, GREY, None)
+            x = WINDOW.get_width() / 2 - PlatformerText.get_width() / 2 + 80 - 150 + 50 + 75 + 50 - 20
+            y = 334
 
             WINDOW.blit(StartText, (x, y))
 
             # About the creator button
-            atc_button = button(WINDOW.get_width() / 2 - 50 + 78, WINDOW.get_height() / 2, 100, 100, 'orange',
+            atc_button = button(WINDOW.get_width() / 2 - 50 + 78, WINDOW.get_height() / 2, 100, 100, (160, 160, 160),
                                 'Creator', None)
             atc_button.render_button()
             atcfontobj = pygame.font.Font(None, 32)
 
-            # atc button text
-            atcText = atcfontobj.render("Creator", True, TEXT_COLOR, None)
+            # Creater button text
+            atcText = atcfontobj.render("Creator", True, GREY, None)
             x = WINDOW.get_width() / 2 - atcText.get_width() / 2 + 80
             y = WINDOW.get_height() / 2 - 45 - atcText.get_height() / 2 + 100 - 10
             WINDOW.blit(atcText, (x, y))
@@ -364,12 +366,12 @@ def main():
             # Tutorial Button
             x = 50
             y = 20
-            tb = button(x, y, 200, 100 / 2, 'dodgerblue', 'tutorial', None)
+            tb = button(x, y, 200, 100 / 2, (160, 160, 160), 'tutorial', None)
             tb.render_button()
             tbfontobj = pygame.font.Font(None, 32)
 
             # Tutorial Button text
-            txt = tbfontobj.render("Tutorial", True, TEXT_COLOR, None)
+            txt = tbfontobj.render("Tutorial", True, GREY, None)
             x = 100
             y = 45 - 10
 
@@ -448,11 +450,11 @@ def main():
             # --- Input ---
             keys = pygame.key.get_pressed()
             player.vel_x = 0
-            if keys[pygame.K_LEFT]:
+            if keys[pygame.K_LEFT or pygame.K_a]:
                 player.vel_x = -player.move_speed
                 player.player_now = player.player_image
                 player.facing_left = True
-            if keys[pygame.K_RIGHT]:
+            if keys[pygame.K_RIGHT or pygame.K_d]:
                 player.vel_x = player.move_speed
                 player.player_now = player.player_flipped_image
                 player.facing_left = False
@@ -672,11 +674,11 @@ def main():
             # Movement
             player.vel_x = 0
 
-            if key[pygame.K_LEFT]:
+            if key[pygame.K_LEFT or pygame.K_a]:
                 player.vel_x = -player.move_speed
                 player.player_now = player.player_image
                 player.facing_left = True
-            if key[pygame.K_RIGHT]:
+            if key[pygame.K_RIGHT or pygame.K_d]:
                 player.vel_x = player.move_speed
                 player.player_now = player.player_flipped_image
                 player.facing_left = False
