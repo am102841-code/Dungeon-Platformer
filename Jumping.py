@@ -40,6 +40,7 @@ pygame.display.set_caption('Platformer')
 
 clock = pygame.time.Clock()
 
+# Images
 background = pygame.image.load('background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
 platform = pygame.image.load('PLATFORM.png').convert_alpha()
@@ -51,7 +52,19 @@ pygame.mixer.music.play(-1)
 
 tutorial_initialized = False
 
+    # Classes
 
+class ColoredPlatform:
+    def __init__(self, rect, color):
+        self.rect = rect
+        self.color = color   #(red, green, blue)
+        self.image = pygame.Surface((rect.width, rect.height))
+        self.image.fill(color)
+
+    def draw(self, surface, image):
+        pass
+
+# Player Class
 class Player():
     def __init__(self):
         self.x = 250
@@ -79,7 +92,7 @@ class Player():
         self.height = 50
         # add collision, gravity, and other code to the player class
 
-
+# Spike Class
 class Spike():
     def __init__(self, x, y):
         self.x = x
@@ -100,7 +113,7 @@ class Spike():
             player.y = 500
             player.hitbox.topleft = (player.x, player.y)
 
-
+# Enemy Class (fix and use later)
 class Enemy():
     def __init__(self):
         self.x = 200
@@ -111,7 +124,7 @@ class Enemy():
         self.player_rect = pygame.Rect(self.x, self.y, 65 / 2, 65 / 2)
         self.facing_left = True
 
-
+# Level Counter Class
 class level_counter():
     def __init__(self, number):
         self.number = number
@@ -124,7 +137,7 @@ class level_counter():
     def set_number(self, newNumber):
         self.number = newNumber
 
-
+# Score Counter Class
 class score_counter():
     def __init__(self):
         pass
@@ -146,6 +159,7 @@ class score_counter():
 # spilt sprite sheet
 # fix sheet
 
+# Coin Animation Class
 class coin_animation():
     def __init__(self, path, fw, fh, fps=10):
         self.sprite_sheet = pygame.image.load(path).convert_alpha()
@@ -183,7 +197,7 @@ class coin_animation():
 # Score counter
 # When player collides --> coin dissapears and score goes up by 1
 
-
+# Not Using right now --> fix
 class TitleAnimation():
     def __init__(self, text, x, y, color, color_change, starting_color, speed, reverse):
         self.text = 'Platformer'
@@ -195,32 +209,7 @@ class TitleAnimation():
         self.speed = speed
         self.reverse = False
 
-
-class Coin():
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.collected = False
-        self.anim = None  # Will be assigned externally
-        self.RECT = pygame.Rect(0, 0, 15, 15)
-
-    def get_hitbox(self):
-        return self.RECT.move(self.x, self.y)
-
-    def render_coin(self):
-        if not self.collected and self.anim:
-            current_frame = self.anim.get_frame()
-            if current_frame:
-                self._blit_frame(current_frame)
-
-    def collide(self, playerHitbox):
-        if self.get_hitbox().colliderect(playerHitbox) and self.collected == False:
-            self.collected = True
-
-    def randomize_pos(self):
-        self.x = self.x + random.randint(-30, 30)
-
-
+# Coin Class
 class Coin():
     def __init__(self, x, y):
         self.x = x
@@ -233,26 +222,21 @@ class Coin():
     def get_hitbox(self):
         return self.hitbox
 
-    def render_coin(self, COIN):
-        if self.collected == False:
-            pygame.draw.circle(WINDOW, (255, 215, 0), (int(self.x + self.width/2), int(self.y + self.height/2)), self.width//2)
-            WINDOW.blit(COIN, (self.x, self.y))
+    def render_coin(self):
+        if not self.collected:
+            # Draw a simple yellow circle
+            pygame.draw.circle(WINDOW, (255, 215, 0), (int(self.x + self.width / 2), int(self.y + self.height / 2)), self.width // 2)
 
     def collide(self, playerHitbox):
-        if self.get_hitbox().colliderect(playerHitbox) and self.collected == False:
+        if self.get_hitbox().colliderect(playerHitbox) and not self.collected:
             self.collected = True
 
     def randomize_pos(self):
-        self.x = self.x + random.randint(-30, 30)
-        self.y = self.y + random.randint(-30, 30)
+        self.x += random.randint(-30, 30)
+        self.y += random.randint(-30, 30)
         self.hitbox.topleft = (self.x, self.y)
 
-
-
-
-
-
-# starting,
+# Button Class
 class button():
     def __init__(self, x, y, width, height, color, text, state):
         self.x = x
@@ -267,9 +251,6 @@ class button():
     def render_button(self):
         pygame.draw.rect(WINDOW, self.color, self.hitbox, 0, 5)
 
-
-
-
 # Horizontal Collisions
 def horizontal_collision(player, Obstacle_list):
     for x in Obstacle_list:
@@ -280,17 +261,6 @@ def horizontal_collision(player, Obstacle_list):
                 player.hitbox.left = x.right
 
 
-"""
-def secret_horizontal_collision(player, secret_obstacle_list):
-    for x in secret_obstacle_list:
-        if player.hitbox.colliderect(x):
-            if player.vel_x > 0:
-                player.hitbox.right = x.left
-            elif player.vel_x < 0:
-                player.hitbox.left = x.right
-"""
-
-coin_anim = coin_animation('Coin.png', 32, 32, 10)
 exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
 
 # The main function that controls the game
@@ -330,7 +300,7 @@ def main():
 
     coin_list = []
 
-    coin1 = Coin(ob1.left + ob1.width / 2, ob1.top - 25)
+    coin1 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
     coin1.randomize_pos()
     coin_list.append(coin1)
 
@@ -759,53 +729,29 @@ def main():
             # Level 2
             if level == 2 and level_changing:
                 level_changing = False
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load("music2.mp3")
+                pygame.mixer.music.play(-1) # -1 makes it loop forever
                 if player.player_reset == True:
                     player.x = 100
                     player.y = 500
                     player.player_reset = False
-                # ob1 = pygame.Rect(290, 395, 125, 50)
+
+                # obstacles
                 ob2 = pygame.Rect(random.randint(550, 575), random.randint(260, 275), 125, 50)
                 ob3 = pygame.Rect(450, 450, 175, 50)
-                # ob4 = pygame.Rect(650/2, 650/2 - 50, 50, 50)
                 ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345, 650 / 2 - 70, 50, 50)  # secret level block
-                # ob6 = pygame.Rect(400, 200, 200, 50)
-
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
+
+                # coins
+                coin1 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
+                coin1.randomize_pos()
+                coin_list.append(coin1)
+
+                # lists
                 obstacle_list = [ob2, ob3, ground]
-                # spike1 = (400, 150, 50, 50)
-                # spike2 = (550, 150, 50, 50)
+                coin_list = [coin1]
 
-                coin_list = []
-                '''
-                new_coin = Coin(ob1.left + ob1.width / 2, ob1.top - 25)
-                new_coin.anim = coin_anim
-                new_coin.randomize_pos()
-                coin_list.append(new_coin)
-
-                new_coin2 = Coin(ob1.left + ob3.width / 2, ob3.top - 25)
-                new_coin2.anim = coin_anim
-                new_coin2.randomize_pos()
-                coin_list.append(new_coin2)
-
-                new_coin3 = Coin(ground.left + ground.width / 2, ob1.top - 25)
-                new_coin3.anim = coin_anim
-                new_coin3.randomize_pos()
-                coin_list.append(new_coin3)
-
-                new_coin4 = Coin(ob6.left + ob6.width / 2, ob6.top - 25)
-                new_coin4.anim = coin_anim
-                new_coin4.randomize_pos()
-                coin_list.append(new_coin4)
-
-                new_coin5 = Coin(ob1.left + ob7.width / 2, ob7.top - 25)
-                new_coin5.anim = coin_anim
-                new_coin5.randomize_pos()
-                coin_list.append(new_coin5)
-                '''
-
-                # touched secret level portal
-
-                # spike_position_list = [spike1, spike2]
 
                 pygame.draw.rect(WINDOW, (255, 0, 0), enemy.player_rect)
             if level == 2 and not level_changing:
@@ -814,7 +760,7 @@ def main():
                     level_counter1.set_number(str('secret level'))
                     level_changing = True
                     print("touched secret level")
-                    level = 'secret'
+                    level = '  secret'
                     WINDOW = pygame.display.set_mode((WINDOW_WIDTH + 400, WINDOW_HEIGHT))
                     background = pygame.transform.scale(background, (800 + 400, 600))
 
@@ -827,68 +773,29 @@ def main():
                     player.y = 500
                     player.player_reset = False
 
-                # ob1 = pygame.Rect(200, 450, 100, 50)
-                ob2 = pygame.Rect(500 - 25, 350, 150, 50)  # long platform on bottom
-                ob3 = pygame.Rect(600 + 75, 250 - 50 - 15, 50, 50)
-                ob4 = pygame.Rect(700, 200, 50, 50)
+                # obstacles
+                ob1 = pygame.Rect(350, 560, 100, 50) # middle - red
+                ob2 = pygame.Rect(300, 490, 120, 50) # left - brown??
+                ob3 = pygame.Rect(450, 500, 75, 50) # right - blue
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
+                # lists
                 coin_list = []
+                obstacle_list = [ob1, ob2, ob3, ground]
 
-                obstacle_list = [ob2, ob3, ob4, ground]
-
-                # replace ALL  coins with this implimentation
-
-                coin1 = Coin(ob1.left + ob1.width / 2, ob1.top - 25)
-                coin1.anim = coin_anim
+                # coins
+                coin1 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
                 coin1.randomize_pos()
                 coin_list.append(coin1)
 
-                '''
-                new_coin1 = Coin(ob1.left + ob1.width / 2, ob1.top - 25)
-                new_coin1.randomize_pos()
-                coin_list.append(new_coin1)
+                coin2 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
+                coin2.randomize_pos()
+                coin_list.append(coin2)
 
-                new_coin2 = Coin(ob1.left + ob1.width / 2 + 10, ob1.top - 25)
-                new_coin2.randomize_pos()
-                coin_list.append(new_coin2)
+                coin3 = Coin(ob3.left + ob3.width / 2, ob3.top - 25 - 15)
+                coin3.randomize_pos()
+                coin_list.append(coin3)
 
-                new_coin3 = Coin(ob2.left + ob2.width / 2, ob2.top - 25)
-                new_coin3.randomize_pos()
-                coin_list.append(new_coin3)
-
-                new_coin4 = Coin(ground.left + ground.width / 2 + 400, ground.top - 25)
-                new_coin4.randomize_pos()
-                coin_list.append(new_coin4)
-
-                new_coin5 = Coin(ground.left + ground.width / 2 - 500, ground.top - 25)
-                new_coin5.randomize_pos()
-                coin_list.append(new_coin5)
-
-                new_coin6 = Coin(ground.left + ground.width / 2 + 300, ground.top - 25)
-                new_coin6.randomize_pos()
-                coin_list.append(new_coin6)
-
-                new_coin7 = Coin(ground.left + ground.width / 2 - 399, ground.top - 25)
-                new_coin7.randomize_pos()
-                coin_list.append(new_coin7)
-
-                new_coin4 = Coin(ob3.left + ob3.width / 2, ob3.top - 25)
-                new_coin4.randomize_pos()
-                coin_list.append(new_coin4)
-
-                new_coin5 = Coin(ground.left + ground.width / 2, ground.top - 25)
-                new_coin5.randomize_pos()
-                coin_list.append(new_coin5)
-
-                new_coin6 = Coin(ob6.left + ob6.width / 2, ob6.top - 25)
-                new_coin6.randomize_pos()
-                coin_list.append(new_coin6)
-
-                new_coin8 = Coin(ground.left + ground.width / 2, ground.top - 25)
-                new_coin8.randomize_pos()
-                coin_list.append(new_coin8)
-                '''
 
             if level == "secret" and not level_changing:
                 horizontal_collision(player, obstacle_list)
@@ -896,6 +803,9 @@ def main():
             # level 3
             if level == 3 and level_changing == True:
                 level_changing = False
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load("music3.mp3")
+                pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
                 WINDOW = pygame.display.set_mode((800, 600))
@@ -909,30 +819,30 @@ def main():
                 # ob1 = pygame.Rect(x, y, width, height)
                 ob1 = pygame.Rect(200, 400, 200, 50)  # long platform with spike1
                 ob2 = pygame.Rect(450, 290, 50, 50)  # make grey
-                # ob3 = pygame.Rect(330, 175, 50, 50) # make grey
                 ob4 = pygame.Rect(550, 175, 160, 50)
                 spikes.clear()
                 spikes.append(Spike(550+75, 150+25-50))
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
+                # lists
                 coin_list = []
                 obstacle_list = [ob1, ob2, ob4, ground]
 
-                coin1 = Coin(ob3.left + ob3.width / 2, ob3.top - 25)
-                coin1.anim = coin_anim
-                coin1.randomize_pos()
-                coin_list.append(coin1)
+                # coins
+                coin3 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
+                coin3.randomize_pos()
+                coin_list.append(coin3)
 
-                coin2 = Coin(ob1.left + ob1.width / 2, ob1.top - 25)
-                coin2.anim = coin_anim
-                coin2.randomize_pos()
-                coin_list.append(coin2)
-
-
+                coin4 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
+                coin4.randomize_pos()
+                coin_list.append(coin4)
 
             # level 4
             if level == 4 and level_changing == True:
                 level_changing = False
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load("music4.mp3")
+                pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
                 WINDOW = pygame.display.set_mode((800, 600))
@@ -944,31 +854,34 @@ def main():
                     player.player_reset = False
 
                 ob1 = pygame.Rect(200, 350, 100, 50)
-                ob2 = pygame.Rect(500 - 25, 350, 100, 50)
+                ob2 = pygame.Rect(475, 350, 100, 50)
                 ob3 = pygame.Rect(375, 545 - 50, 50, 50)  # fill with grey
                 # ob4 = pygame.Rect(375, 350, 50, 50) # fill with grey
                 ob5 = pygame.Rect(475 + 45 + 75 + 25, 200 + 12 + 10, 50, 50)  # fill with grey
-                ob6 = pygame.Rect(ob5.x - 25 - 75 - 25, ob5.y - 35 - 50, 50, 50)  # fill with grey
+                ob6 = pygame.Rect(ob5.x - 25 - 75 - 25 - 15, ob5.y - 35 - 50, 50, 50)  # fill with grey
                 spikes.clear()
-                spikes.append(Spike(ob5.x + 20, ob5.y - ob5.height))
+                #spikes.append(Spike(ob5.x + 20, ob5.y - ob5.height))
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
+                # lists
                 coin_list = []
                 obstacle_list = [ob1, ob2, ob3, ob5, ob6, ground]
 
-                coin1 = Coin(ground.left + ground.width / 2, ground.top - 25)
-                coin1.anim = coin_anim
-                coin1.randomize_pos()
-                coin_list.append(coin1)
+                # coins
+                coin3 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
+                coin3.randomize_pos()
+                coin_list.append(coin3)
 
-                coin2 = Coin(ground.left + ground.width / 2, ground.top - 25)
-                coin1.anim = coin_anim
-                coin1.randomize_pos()
-                coin_list.append(coin2)
+                coin4 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
+                coin4.randomize_pos()
+                coin_list.append(coin4)
 
             # level 5
             if level == 5 and level_changing == True:
                 level_changing = False
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load("music5.mp3")
+                pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
                 WINDOW = pygame.display.set_mode((800, 600))
@@ -979,20 +892,31 @@ def main():
                     player.y = 500
                     player.player_reset = False
 
+                # obstacles
                 ob1 = pygame.Rect(200, 425, 100, 50)
                 ob2 = pygame.Rect(250 + 25, 225 + 50 + 30, 50, 50) # filled with grey
-                ob3 = pygame.Rect(ob2.x + 40 + 75, ob2.y - 75 + 35, 125, 50)
+                ob3 = pygame.Rect(ob2.x + 40 + 75, ob2.y - 75 + 35, 125, 50) # add coin on top
                 ob4 = pygame.Rect(ob3.x + 100 + 50, ob3.y - 75, 50, 50) # filled with grey
                 ob5 = pygame.Rect(ob4.x + 75 + 75, ob4.y, 50, 50) # filled with grey
+                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
+
+                # lists
+                obstacle_list = [ob1, ob2, ob3, ob4, ob5, ground]
+                coin_list = []
+
+                # spikes
                 spikes.clear()
                 spikes.append(Spike(ob3.x + 20, ob3.y - ob3.height))
                 spikes.append(Spike(800-175, 100))
-                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
+                # coins
+                coin4 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
+                coin4.randomize_pos()
+                coin_list.append(coin4)
 
-
-                obstacle_list = [ob1, ob2, ob3, ob4, ob5, ground]
-                coin_list = []
+                coin5 = Coin(ob3.left + ob3.width / 2 - 20, ob3.top - 25 - 15)
+                coin5.randomize_pos()
+                coin_list.append(coin5)
 
             # level 6
             if level == 6 and level_changing == True:
@@ -1057,8 +981,6 @@ def main():
                 player.x = WINDOW_WIDTH - player.hitbox.width
                 player.hitbox.right = WINDOW_WIDTH
 
-            # This section will be built out later
-
             # Render elements of the game
             portal_x = 680 - 300
             portal_y = 100 + 100
@@ -1092,6 +1014,14 @@ def main():
                 if level == 6:
                     if rect == ob2:
                         platform_img.fill((128, 128, 128))
+
+                if level == 'secret':
+                    if rect == ob1:  # red
+                        platform_img.fill((255, 50, 50))
+                    if rect == ob2:  # brown
+                        platform_img.fill((139, 60, 19))
+                    if rect == ob3:  # blue
+                        platform_img.fill(((0, 102, 204)))
                 WINDOW.blit(platform_img, rect.topleft)
 
             if level == 2:
@@ -1107,8 +1037,6 @@ def main():
                 portal_y = 100 - 23.5
                 portal_hitbox.topleft = (portal_x, portal_y)
                 pygame.draw.rect(WINDOW, (0, 0, 0), portal_hitbox)
-                for x in obstacle_list:
-                    pygame.draw.rect(WINDOW, (0, 0, 0), x)
 
             if level == 3:
                 portal_x = WINDOW_WIDTH - 75 - 20
@@ -1152,12 +1080,9 @@ def main():
                 player.x = 100
                 player.y = 500
                 obstacle_list = []
-                portal_x = 680 - 300
-                portal_y = 100 + 100
+                portal_x = 380
+                portal_y = 200
                 portal_hitbox.topleft = (portal_x, portal_y)
-
-
-
 
             # WINDOW.fill(PLAYER_COLOR, player)
             WINDOW.blit(player.player_now, (player.x, player.y))
