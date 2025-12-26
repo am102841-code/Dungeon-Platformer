@@ -1,12 +1,41 @@
-Dungeon Platformer 
-------------------
-A 2-d platformer that is dungeon themed with newly added dungeon music tracks that vary from levels 1-5. This project was inspired by games Terraria and Ro and developed for over two years with countless updates.
+# 🏰 Dungeon Platformer
 
-Go to my published game webpage and play the game: https://platformer-webpage--am102841.replit.app/ 
+Dungeon Platformer is a **2D dungeon-themed platformer** inspired by games like *Terraria* and *Rogue-like platformers*. The game has been in development for **over two years**, with frequent updates and improvements.
 
-Fill out my playtester data form: https://forms.gle/4UzGfbfykKB6qY897
+Each level features **unique dungeon music**, with tracks that change from **levels 1–5**, creating an immersive atmosphere as you progress.
 
-In the future, I am going to add a shop, multiple player skins, sprite sheet animations for the player and coins, and even multiplayer. 
+---
 
-I also have an **MIT License**; feel free to check that out. 
+## 🎮 Play the Game
+👉 **Play here:**  
+https://platformer-webpage--am102841.replit.app/
 
+---
+
+## 🧩 Features
+- Classic 2D platformer gameplay  
+- Dungeon-themed environments  
+- Level-based music that changes as you progress  
+- Smooth player movement and level design  
+- Ongoing updates and improvements  
+
+---
+
+## 🧪 Playtesting
+Help improve the game by filling out the playtester feedback form:  
+📋 https://forms.gle/4UzGfbfykKB6qY897
+
+---
+
+## 🚀 Future Plans
+Planned features include:
+- In-game shop  
+- Multiple player skins  
+- Sprite sheet animations (player & coins)  
+- Multiplayer support  
+
+---
+
+## 📜 License
+This project is licensed under the **MIT License**.  
+Feel free to explore, modify, and learn from the code.
