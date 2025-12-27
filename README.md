@@ -10,6 +10,12 @@ Each level features **unique dungeon music**, with tracks that change from **lev
 👉 **Play here:**  
 https://platformer-webpage--am102841.replit.app/
 
+👉 **Check out my Dev Log here:**  
+https://github.com/am102841-code/Dungeon-Platformer/wiki
+
+
+ 
+
 **How to play**
 
 Use arrow keys and spacebar to move around 
