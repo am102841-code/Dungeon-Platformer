@@ -20,12 +20,14 @@ pygame.mixer.init()
 
 # Add Spike Collisions and finish player class
 
+f = pygame.font.get_fonts()
+print(f)
 
 # Colours
 BACKGROUND = (255, 255, 255)
 OBSTACLE_COLOR = (0, 0, 0)
 PLAYER_COLOR = (0, 199, 255)
-TEXT_COLOR = (200, 100, 0)
+TEXT_COLOR = (100, 100, 100)
 CREATOR_COLOR = (153, 204, 255)
 GREY = (224, 224, 224)
 
@@ -323,6 +325,8 @@ def main():
 
         if game_state == 'gameMenu':
             mouseClicked = False
+            knight_selected = True
+            wizard_selected = False
 
             background_img = pygame.image.load('game_menu.png').convert_alpha()
             background_img = pygame.transform.scale(background_img, (800, 600))
@@ -374,33 +378,130 @@ def main():
             txt = tbfontobj.render("Tutorial", True, GREY, None)
             x = 100
             y = 45 - 10
-
             WINDOW.blit(txt, (x, y))
 
+            # Characters button
+            x = 50 + tb.width/3 + 150
+            y = 20
+            skins = button(x, y, tb.width, tb.height, (160, 160, 160), 'Characters', None)
+            skins.render_button()
+            font3 = pygame.font.Font(None, 32)
+
+            # text
+            text = font3.render("Characters", True, GREY, None)
+            x = skins.x + skins.width/2 - 50 - 7.5
+            y = skins.y + skins.height/2- 10
+            WINDOW.blit(text, (x, y))
 
             for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONUP:
-                    mouseClicked = False
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = event.pos
+
+                    if start_button.hitbox.collidepoint(mouse_x, mouse_y):
+                        level = 1
+                        level_counter1.set_number(1)
+                        player.health = player.max_health
+                        player.x = 100
+                        player.y = 500
+                        tutorial_initialized = False
+                        game_state = 'gameplay'
+
+                    elif atc_button.hitbox.collidepoint(mouse_x, mouse_y):
+                        game_state = 'creator'
+
+                    elif tb.hitbox.collidepoint(mouse_x, mouse_y):
+                        game_state = 'tutorial_level'
+
+
+                    elif skins.hitbox.collidepoint(mouse_x, mouse_y):
+                        game_state = 'skins'
+
+
+        elif game_state == "skins":
+            WINDOW.fill('lightgrey')
+
+            # text
+            font2 = pygame.font.Font(None, 75)
+            text = font2.render("Click to choose your character", True, (0, 0, 0), None)
+            x = 125 - 75 - 20
+            y = 40 + 20
+            WINDOW.blit(text, (x, y))
+
+            # knight image
+            knight = pygame.image.load('KNIGHT.png').convert_alpha()
+            knight = pygame.transform.scale(knight, (120, 120))
+            WINDOW.blit(knight, (125, 200))
+
+            # make hitbox
+            hitbox = knight.get_rect()
+            hitbox.topleft = (125, 200)
+
+            # wizard image
+            wizard = pygame.image.load("WIZARD.png").convert_alpha()
+            wizard = pygame.transform.scale(wizard, (200, 200))
+            WINDOW.blit(wizard, (225, 200))
+
+            # make hitbox2
+            hitbox2 = wizard.get_rect()
+            hitbox2.topleft = (225, 200)
+
+            # elf image
+            #elf = pygame.image.load("ELF.png").convert_alpha()
+            #elf = pygame.transform.scale(elf, (100, 100))
+            #WINDOW.blit(elf, (445, 200))
+
+            # Exit Button
+            exit_button = button(600, 500 - 75, 100, 100, 'orange', 'exit', None)
+            exit_button.render_button()
+            exitfontobj = pygame.font.Font(None, 32)
+
+            # Exit Button text
+            ExitText = exitfontobj.render("Exit", True, TEXT_COLOR, None)
+            x = 600 + 50 - 25
+            y = 500 - 75 + 50 - 25 + 15
+
+            WINDOW.blit(ExitText, (x, y))
+
+            # Knight Selected Text
+            k = exitfontobj.render("Knight was selected!", True, (0, 0, 0), None)
+            kx = 450
+            ky = 200
+
+            # Wizard selected text
+            w = exitfontobj.render("Wizard was selected!", True, (0, 0, 0), None)
+            wx = 450
+            wy = 200
+
+
+            mouseClicked = False
+
+            for event in pygame.event.get():
+                # if clicked
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouseClicked = True
-                mouse_x, mouse_y = pygame.mouse.get_pos()
-                if start_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked == True:
-                    level = 1
-                    level_counter1.set_number(1)
-                    player.health = player.max_health
-                    player.x = 100
-                    player.y = 500
-                    tutorial_initialized = False
-                    game_state = 'gameplay'
-                if atc_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked == True:
-                    game_state = 'creator'
-                if tb.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked == True:
-                    game_state = 'tutorial_level'
                 if event.type == pygame.QUIT:
-                    exit()
+                    pygame.quit()
+                    sys.exit()
+
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+
+            # Check EXIT button click
+            if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                game_state = 'gameMenu'
+            if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                WINDOW.blit(k, (kx, ky)) # make the text stay for longer 
+                knight_selected = True
+            if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                WINDOW.blit(w, (wx, wy))
+                wizard_selected = True
+
+
 
         elif game_state == 'tutorial_level':
-
             # Exit Button
             exit_button = button(exit_button_rect.x, exit_button_rect.y, exit_button_rect.width, exit_button_rect.height, 'orange', 'exit', None)
             exitfontobj = pygame.font.Font(None, 32)
@@ -413,7 +514,7 @@ def main():
             mouseClicked = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit
+                    pygame.quit()
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
@@ -583,7 +684,7 @@ def main():
         # Creator Page
         elif game_state == 'creator':
             # mouseClicked = False
-            WINDOW.fill('lightblue')
+            WINDOW.fill('lightgrey')
 
             Titlefontobj = pygame.font.Font(None, 64)
 
@@ -776,10 +877,10 @@ def main():
                     player.player_reset = False
 
                 # obstacles
-                ob1 = pygame.Rect(350, 560, 100, 50) # middle - red
-                ob2 = pygame.Rect(300, 490, 120, 50) # left - brown??
-                ob3 = pygame.Rect(450, 500, 75, 50) # right - blue
-                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
+                ob1 = (pygame.Rect(350, 560, 100, 50), (255, 50, 50))# middle - red
+                ob2 = (pygame.Rect(300, 490, 120, 50), (139, 60, 19)) # left - brown??
+                ob3 = (pygame.Rect(450, 500, 75, 50), (0, 102, 204)) # right - blue
+                ground = pygame.Rect((0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10), (0, 0, 0))
 
                 # lists
                 coin_list = []
@@ -1017,13 +1118,6 @@ def main():
                     if rect == ob2:
                         platform_img.fill((128, 128, 128))
 
-                if level == 'secret':
-                    if rect == ob1:  # red
-                        platform_img.fill((255, 50, 50))
-                    if rect == ob2:  # brown
-                        platform_img.fill((139, 60, 19))
-                    if rect == ob3:  # blue
-                        platform_img.fill(((0, 102, 204)))
                 WINDOW.blit(platform_img, rect.topleft)
 
             if level == 2:
@@ -1034,11 +1128,13 @@ def main():
                 platform_img = pygame.transform.scale(platform_img, (ob5.width, ob5.height))
                 platform_img.fill((128, 128, 128))
                 WINDOW.blit(platform_img, ob5.topleft)
+
             if level == 'secret':
                 portal_x = 680 + 250
                 portal_y = 100 - 23.5
                 portal_hitbox.topleft = (portal_x, portal_y)
                 pygame.draw.rect(WINDOW, (0, 0, 0), portal_hitbox)
+
 
             if level == 3:
                 portal_x = WINDOW_WIDTH - 75 - 20
