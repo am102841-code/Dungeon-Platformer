@@ -422,6 +422,7 @@ def main():
 
 
         elif game_state == "skins":
+            # characters: knight; scarlet knight; wizard; witch; healer
             WINDOW.fill('lightgrey')
 
             # text
@@ -436,6 +437,11 @@ def main():
             knight = pygame.transform.scale(knight, (120, 120))
             WINDOW.blit(knight, (125, 200))
 
+            # knight text
+            font3 = pygame.font.Font(None, 32)
+            text = font3.render("Knight", True, (0, 0, 0), None)
+            WINDOW.blit(text, (130 + 15, 335))
+
             # make hitbox
             hitbox = knight.get_rect()
             hitbox.topleft = (125, 200)
@@ -444,6 +450,10 @@ def main():
             wizard = pygame.image.load("WIZARD.png").convert_alpha()
             wizard = pygame.transform.scale(wizard, (200, 200))
             WINDOW.blit(wizard, (225, 200))
+
+            # wizard text
+            text = font3.render("Wizard", True, (0, 0, 0), None)
+            WINDOW.blit(text, (130 + 15 + 125, 335))
 
             # make hitbox2
             hitbox2 = wizard.get_rect()
@@ -493,7 +503,7 @@ def main():
             if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 game_state = 'gameMenu'
             if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                WINDOW.blit(k, (kx, ky)) # make the text stay for longer 
+                WINDOW.blit(k, (kx, ky)) # make the text stay for longer
                 knight_selected = True
             if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 WINDOW.blit(w, (wx, wy))
@@ -843,7 +853,7 @@ def main():
                 # obstacles
                 ob2 = pygame.Rect(random.randint(550, 575), random.randint(260, 275), 125, 50)
                 ob3 = pygame.Rect(450, 450, 175, 50)
-                ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345, 650 / 2 - 70, 50, 50)  # secret level block
+                ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50, 650 / 2 - 70 - 25, 50, 50)  # secret level block
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
 
                 # coins
@@ -1035,7 +1045,7 @@ def main():
                     player.player_reset = False
 
                 ob1 = pygame.Rect(150, 500 - 50, 150, 50)
-                ob2 = pygame.Rect(ob1.x + 100, ob1.y - 50, 60, 50) # fill with grey
+                ob2 = pygame.Rect(ob1.x + 100 + 75, ob1.y - 50 - 50, 60, 50) # fill with grey
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
                 obstacle_list = [ob1, ob2, ground]
@@ -1149,7 +1159,7 @@ def main():
 
             if level == 4:
                 portal_x = WINDOW_WIDTH - 75 - 20 - 400
-                portal_y = 50
+                portal_y = 50 - 25 - 10
                 portal_hitbox.topleft = (portal_x, portal_y)
                 for spike in spikes:
                     WINDOW.blit(spike.image, (spike.x, spike.y))
