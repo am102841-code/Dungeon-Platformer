@@ -60,11 +60,16 @@ clock = pygame.time.Clock()
 background = pygame.image.load('background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
 platform = pygame.image.load('PLATFORM.png').convert_alpha()
+
+# Characters Images
 knight = pygame.image.load('KNIGHT.png').convert_alpha()
+knight = pygame.transform.scale(knight, (65, 65))
 wizard = pygame.image.load('WIZARD.png').convert_alpha()
+wizard = pygame.transform.scale(wizard, (65, 65))
+
 
 # music
-pygame.mixer.music.load("music.mp3")
+pygame.mixer.music.load("music0.mp3")
 pygame.mixer.music.set_volume(1)
 pygame.mixer.music.play(-1)
 
@@ -465,15 +470,22 @@ def main():
             # wizard image
             wizard = pygame.image.load("WIZARD.png").convert_alpha()
             wizard = pygame.transform.scale(wizard, (200, 200))
-            WINDOW.blit(wizard, (225, 200))
+            WINDOW.blit(wizard, (265-25, 200))
 
             # wizard text
             text = font3.render("Wizard", True, (0, 0, 0), None)
-            WINDOW.blit(text, (130 + 15 + 125, 335))
+            WINDOW.blit(text, (130 + 15 + 125 + 20, 335))
 
             # make hitbox2
             hitbox2 = wizard.get_rect()
             hitbox2.topleft = (225, 200)
+
+            # rectangle borders
+            border = pygame.Rect(130-25, 200, 170-25, 170)
+            pygame.draw.rect(WINDOW, (0, 0, 0), border, width=5)
+
+            border2 = pygame.Rect(130-25 + 150, 200, 170-25, 170)
+            pygame.draw.rect(WINDOW, (0, 0, 0), border2, width=5)
 
             # elf image
             #elf = pygame.image.load("ELF.png").convert_alpha()
@@ -511,6 +523,7 @@ def main():
             # if knight is clicked
             if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 start_time = time.time()
+                player.player_image = knight
                 show_message = True
                 knight_selected = True
                 text = "Knight was selected!"
@@ -520,6 +533,7 @@ def main():
             if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 wizard_selected = True
                 start_time2 = time.time()
+                player.player_image = wizard
                 show_message2 = True
                 text2 = "Wizard was selected!"
                 #WINDOW.blit(w, (wx, wy))
@@ -1210,6 +1224,9 @@ def main():
 
             for coin in coin_list:
                 coin.render_coin()
+
+            if player.player_image:
+                WINDOW.blit(player.player_image, (player.x, player.y))
 
             if player.health <= 0:
                 game_state = 'gameMenu'
