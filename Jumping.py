@@ -65,7 +65,7 @@ platform = pygame.image.load('PLATFORM.png').convert_alpha()
 knight = pygame.image.load('KNIGHT.png').convert_alpha()
 knight = pygame.transform.scale(knight, (65, 65))
 wizard = pygame.image.load('WIZARD.png').convert_alpha()
-wizard = pygame.transform.scale(wizard, (65, 65))
+wizard = pygame.transform.scale(wizard, (100, 100))
 
 
 # music
@@ -454,9 +454,8 @@ def main():
             WINDOW.blit(text, (x, y))
 
             # knight image
-            knight = pygame.image.load('KNIGHT.png').convert_alpha()
-            knight = pygame.transform.scale(knight, (120, 120))
-            WINDOW.blit(knight, (125, 200))
+            knight2 = pygame.transform.scale(knight, (120, 120))
+            WINDOW.blit(knight2, (125, 200))
 
             # knight text
             font3 = pygame.font.Font(None, 32)
@@ -468,16 +467,16 @@ def main():
             hitbox.topleft = (125, 200)
 
             # wizard image
-            wizard = pygame.image.load("WIZARD.png").convert_alpha()
-            wizard = pygame.transform.scale(wizard, (200, 200))
-            WINDOW.blit(wizard, (265-25, 200))
+            wizard_image = pygame.image.load("WIZARD.png").convert_alpha()
+            wizard_image = pygame.transform.scale(wizard_image, (200, 200))
+            WINDOW.blit(wizard_image, (265-25, 200))
 
             # wizard text
             text = font3.render("Wizard", True, (0, 0, 0), None)
             WINDOW.blit(text, (130 + 15 + 125 + 20, 335))
 
             # make hitbox2
-            hitbox2 = wizard.get_rect()
+            hitbox2 = wizard_image.get_rect()
             hitbox2.topleft = (225, 200)
 
             # rectangle borders
@@ -1228,6 +1227,7 @@ def main():
             if player.player_image:
                 WINDOW.blit(player.player_image, (player.x, player.y))
 
+
             if player.health <= 0:
                 game_state = 'gameMenu'
                 level = 1
@@ -1240,7 +1240,7 @@ def main():
                 portal_hitbox.topleft = (portal_x, portal_y)
 
             # WINDOW.fill(PLAYER_COLOR, player)
-            WINDOW.blit(player.player_now, (player.x, player.y))
+            #WINDOW.blit(player.player_now, (player.x, player.y))
             WINDOW.blit(portal, (portal_x, portal_y))
             WINDOW.blit(level_counter1.text(), (170, 100))
             WINDOW.blit(coin_counter.text(coin_list), (300, 100))
