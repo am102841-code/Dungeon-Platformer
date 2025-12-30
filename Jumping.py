@@ -1,4 +1,4 @@
-import pygame, sys, random
+import pygame, sys, random, time
 from pygame.locals import *
 
 pygame.init()
@@ -19,6 +19,19 @@ pygame.mixer.init()
 # Next Levels --> same layout, but each level gets harder
 
 # Add Spike Collisions and finish player class
+
+# Initialize Variables
+
+# Knight
+show_message = False
+start_time = 0
+text = ""
+
+# Wizard
+show_message2 = False
+start_time2 = 0
+text2 = ""
+
 
 f = pygame.font.get_fonts()
 print(f)
@@ -47,7 +60,8 @@ clock = pygame.time.Clock()
 background = pygame.image.load('background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
 platform = pygame.image.load('PLATFORM.png').convert_alpha()
-
+knight = pygame.image.load('KNIGHT.png').convert_alpha()
+wizard = pygame.image.load('WIZARD.png').convert_alpha()
 
 # music
 pygame.mixer.music.load("music.mp3")
@@ -271,12 +285,13 @@ exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
 def main():
     looping = True
 
-    global level
+    global level, show_message2
     global WINDOW
     global background
     global secret_obstacle_list
     global tutorial_initialized
     global spikes
+    global show_message
 
     player = Player()
     ### Obstacle Setup ###
@@ -426,10 +441,11 @@ def main():
             WINDOW.fill('lightgrey')
 
             # text
-            font2 = pygame.font.Font(None, 75)
-            text = font2.render("Click to choose your character", True, (0, 0, 0), None)
-            x = 125 - 75 - 20
-            y = 40 + 20
+            my_font = pygame.font.Font('FONT.ttf', 24)
+            #font2 = pygame.font.Font(None, 75)
+            text = my_font.render("Click to choose your character", True, (0, 0, 0), None)
+            x = 125 - 75 - 20 - 7.5
+            y = 40 + 20 + 25
             WINDOW.blit(text, (x, y))
 
             # knight image
@@ -476,16 +492,6 @@ def main():
 
             WINDOW.blit(ExitText, (x, y))
 
-            # Knight Selected Text
-            k = exitfontobj.render("Knight was selected!", True, (0, 0, 0), None)
-            kx = 450
-            ky = 200
-
-            # Wizard selected text
-            w = exitfontobj.render("Wizard was selected!", True, (0, 0, 0), None)
-            wx = 450
-            wy = 200
-
 
             mouseClicked = False
 
@@ -502,12 +508,36 @@ def main():
             # Check EXIT button click
             if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 game_state = 'gameMenu'
+            # if knight is clicked
             if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                WINDOW.blit(k, (kx, ky)) # make the text stay for longer
+                start_time = time.time()
+                show_message = True
                 knight_selected = True
+                text = "Knight was selected!"
+                #WINDOW.blit(k, (kx, ky)) # make the text stay for longer
+
+            # if wizard is clicked
             if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                WINDOW.blit(w, (wx, wy))
                 wizard_selected = True
+                start_time2 = time.time()
+                show_message2 = True
+                text2 = "Wizard was selected!"
+                #WINDOW.blit(w, (wx, wy))
+
+            # Show Knight text
+            if show_message == True:
+                if time.time() - start_time < 1:
+                    WINDOW.blit(exitfontobj.render("Knight was selected!", True, (0, 0, 0)), (450, 200))
+                else:
+                    show_message = False
+
+            # Show Wizard text
+            if show_message2 == True:
+                if time.time() - start_time2 < 1:
+                    WINDOW.blit(exitfontobj.render("Wizard was selected!", True, (0, 0, 0)), (450, 200))
+                else:
+                    show_message2 = False
+
 
 
 
