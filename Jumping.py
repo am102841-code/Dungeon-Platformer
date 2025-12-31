@@ -91,6 +91,7 @@ class ColoredPlatform:
 # Player Class
 class Player():
     def __init__(self):
+        self.player_now = None
         self.x = 250
         self.y = 450
         self.player_image = pygame.image.load('KNIGHT.png').convert_alpha()
@@ -98,7 +99,6 @@ class Player():
         self.player_flipped_image = pygame.transform.flip(self.player_image, True, False)
         self.vel_y = 0
         self.vel_x = 0
-        self.player_now = self.player_image
         # self.jump_strength = -21.5
         self.jump_strength = -20.67676767
         self.gravity = 1
@@ -651,7 +651,8 @@ def main():
             WINDOW.blit(text_surface, (200, 150))
             exit_button.render_button()
             WINDOW.blit(ExitText, (x, y))
-            WINDOW.blit(player.player_now, (player.x, player.y))
+            if selected_character is not None:
+                WINDOW.blit(player.player_now, (player.x, player.y))
             for ob in obstacle_list:
                 WINDOW.blit(pygame.transform.scale(platform, (ob.width, ob.height)), ob.topleft)
 
@@ -1239,7 +1240,8 @@ def main():
                     player.player_now = player.player_image
                     player.facing_left = True
 
-                WINDOW.blit(player.player_now, (player.x, player.y))
+                if selected_character is not None:
+                    WINDOW.blit(player.player_now, (player.x, player.y))
 
 
             if player.health <= 0:
