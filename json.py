@@ -1,8 +1,21 @@
 import json
 
-data = {"name": "Knight", "level": 1}
-json_string = json.dumps(data)
-print("JSON String:", json_string)
+# Example player data
+player_data = {
+    "name": "Knight",
+    "level": 3,
+    "health": 10,
+    "coins": 5
+}
 
-loaded_data = json.loads(json_string)
-print("Loaded Data:", loaded_data)
+# --- Save data to a file ---
+with open("savegame.json", "w") as f:
+    json.dump(player_data, f)
+
+print("Game saved!")
+
+# --- Load data from a file ---
+with open("savegame.json", "r") as f:
+    loaded_data = json.load(f)
+
+print("Loaded data:", loaded_data)
