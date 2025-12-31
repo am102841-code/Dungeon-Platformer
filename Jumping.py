@@ -823,23 +823,23 @@ def main():
             # level_changing = True
             level_changing = False
             # Get inputs
-            key = pygame.key.get_pressed()
+            keys = pygame.key.get_pressed()
 
             # Movement
             player.vel_x = 0
 
-            if key[pygame.K_LEFT or pygame.K_a]:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 player.vel_x = -player.move_speed
                 player.player_now = player.player_image
                 player.facing_left = True
-            if key[pygame.K_RIGHT or pygame.K_d]:
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player.vel_x = player.move_speed
                 player.player_now = player.player_flipped_image
                 player.facing_left = False
-            if (key[pygame.K_UP] or key[pygame.K_SPACE]) and player.on_ground == True:
+            if (keys[pygame.K_UP] or keys[pygame.K_SPACE]) and player.on_ground == True:
                 player.vel_y = player.jump_strength
                 player.on_ground = False
-            if key[pygame.K_SLASH]:
+            if keys[pygame.K_SLASH]:
                 colorImage = pygame.Surface(player.player_image.get_size()).convert_alpha()
                 colorImage.fill(player.player_color)
                 player.player_image.blit(colorImage, (player.x, player.y), special_flags=pygame.BLEND_RGBA_MULT)
@@ -1225,7 +1225,19 @@ def main():
                 coin.render_coin()
 
             if player.player_image:
-                WINDOW.blit(player.player_image, (player.x, player.y))
+                keys = pygame.key.get_pressed()
+
+                if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                    player.vel_x = player.move_speed
+                    player.player_now = player.player_flipped_image
+                    player.facing_left = False
+                elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                    player.vel_x = -player.move_speed
+                    player.player_now = player.player_image
+                    player.facing_left = True
+
+                # draw player
+                WINDOW.blit(player.player_now, (player.x, player.y))
 
 
             if player.health <= 0:
