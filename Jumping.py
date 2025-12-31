@@ -21,6 +21,7 @@ pygame.mixer.init()
 # Add Spike Collisions and finish player class
 
 # Initialize Variables
+selected_character = None
 
 # Knight
 show_message = False
@@ -60,11 +61,16 @@ clock = pygame.time.Clock()
 background = pygame.image.load('background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
 platform = pygame.image.load('PLATFORM.png').convert_alpha()
+
+# Characters Images
 knight = pygame.image.load('KNIGHT.png').convert_alpha()
+knight = pygame.transform.scale(knight, (65, 65))
 wizard = pygame.image.load('WIZARD.png').convert_alpha()
+wizard = pygame.transform.scale(wizard, (100, 100))
+
 
 # music
-pygame.mixer.music.load("music.mp3")
+pygame.mixer.music.load("music0.mp3")
 pygame.mixer.music.set_volume(1)
 pygame.mixer.music.play(-1)
 
@@ -85,6 +91,7 @@ class ColoredPlatform:
 # Player Class
 class Player():
     def __init__(self):
+        self.player_now = None
         self.x = 250
         self.y = 450
         self.player_image = pygame.image.load('KNIGHT.png').convert_alpha()
@@ -92,7 +99,6 @@ class Player():
         self.player_flipped_image = pygame.transform.flip(self.player_image, True, False)
         self.vel_y = 0
         self.vel_x = 0
-        self.player_now = self.player_image
         # self.jump_strength = -21.5
         self.jump_strength = -20.67676767
         self.gravity = 1
@@ -285,7 +291,7 @@ exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
 def main():
     looping = True
 
-    global level, show_message2
+    global level, show_message2, selected_character
     global WINDOW
     global background
     global secret_obstacle_list
@@ -294,6 +300,19 @@ def main():
     global show_message
 
     player = Player()
+
+    if selected_character == "wizard":
+        player.player_now = wizard
+        player.player_flipped_image = pygame.transform.flip(wizard, True, False)
+
+    elif selected_character == "knight":
+        player.player_now = knight
+        player.player_flipped_image = pygame.transform.flip(knight, True, False)
+
+    else:
+        player.player_now = knight
+        player.player_flipped_image = pygame.transform.flip(knight, True, False)
+
     ### Obstacle Setup ###
     enemy = Enemy()
     ob2X = random.randint(550, 575)
@@ -449,9 +468,8 @@ def main():
             WINDOW.blit(text, (x, y))
 
             # knight image
-            knight = pygame.image.load('KNIGHT.png').convert_alpha()
-            knight = pygame.transform.scale(knight, (120, 120))
-            WINDOW.blit(knight, (125, 200))
+            knight2 = pygame.transform.scale(knight, (120, 120))
+            WINDOW.blit(knight2, (125, 200))
 
             # knight text
             font3 = pygame.font.Font(None, 32)
@@ -463,17 +481,24 @@ def main():
             hitbox.topleft = (125, 200)
 
             # wizard image
-            wizard = pygame.image.load("WIZARD.png").convert_alpha()
-            wizard = pygame.transform.scale(wizard, (200, 200))
-            WINDOW.blit(wizard, (225, 200))
+            wizard_image = pygame.image.load("WIZARD.png").convert_alpha()
+            wizard_image = pygame.transform.scale(wizard_image, (200, 200))
+            WINDOW.blit(wizard_image, (265-25, 200))
 
             # wizard text
             text = font3.render("Wizard", True, (0, 0, 0), None)
-            WINDOW.blit(text, (130 + 15 + 125, 335))
+            WINDOW.blit(text, (130 + 15 + 125 + 20, 335))
 
             # make hitbox2
-            hitbox2 = wizard.get_rect()
+            hitbox2 = wizard_image.get_rect()
             hitbox2.topleft = (225, 200)
+
+            # rectangle borders
+            border = pygame.Rect(130-25, 200, 170-25, 170)
+            pygame.draw.rect(WINDOW, (0, 0, 0), border, width=5)
+
+            border2 = pygame.Rect(130-25 + 150, 200, 170-25, 170)
+            pygame.draw.rect(WINDOW, (0, 0, 0), border2, width=5)
 
             # elf image
             #elf = pygame.image.load("ELF.png").convert_alpha()
@@ -510,16 +535,20 @@ def main():
                 game_state = 'gameMenu'
             # if knight is clicked
             if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                selected_character = "knight"
                 start_time = time.time()
+                player.player_image = knight
+                player.player_flipped_image = pygame.transform.flip(knight, True, False)
                 show_message = True
-                knight_selected = True
                 text = "Knight was selected!"
                 #WINDOW.blit(k, (kx, ky)) # make the text stay for longer
 
             # if wizard is clicked
             if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                wizard_selected = True
+                selected_character = "wizard"
                 start_time2 = time.time()
+                player.player_image = wizard
+                player.player_flipped_image = pygame.transform.flip(wizard, True, False)
                 show_message2 = True
                 text2 = "Wizard was selected!"
                 #WINDOW.blit(w, (wx, wy))
@@ -591,11 +620,11 @@ def main():
             # --- Input ---
             keys = pygame.key.get_pressed()
             player.vel_x = 0
-            if keys[pygame.K_LEFT or pygame.K_a]:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 player.vel_x = -player.move_speed
                 player.player_now = player.player_image
                 player.facing_left = True
-            if keys[pygame.K_RIGHT or pygame.K_d]:
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player.vel_x = player.move_speed
                 player.player_now = player.player_flipped_image
                 player.facing_left = False
@@ -635,7 +664,8 @@ def main():
             WINDOW.blit(text_surface, (200, 150))
             exit_button.render_button()
             WINDOW.blit(ExitText, (x, y))
-            WINDOW.blit(player.player_now, (player.x, player.y))
+            if selected_character is not None:
+                WINDOW.blit(player.player_now, (player.x, player.y))
             for ob in obstacle_list:
                 WINDOW.blit(pygame.transform.scale(platform, (ob.width, ob.height)), ob.topleft)
 
@@ -810,23 +840,23 @@ def main():
             # level_changing = True
             level_changing = False
             # Get inputs
-            key = pygame.key.get_pressed()
+            keys = pygame.key.get_pressed()
 
             # Movement
             player.vel_x = 0
 
-            if key[pygame.K_LEFT or pygame.K_a]:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 player.vel_x = -player.move_speed
                 player.player_now = player.player_image
                 player.facing_left = True
-            if key[pygame.K_RIGHT or pygame.K_d]:
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player.vel_x = player.move_speed
                 player.player_now = player.player_flipped_image
                 player.facing_left = False
-            if (key[pygame.K_UP] or key[pygame.K_SPACE]) and player.on_ground == True:
+            if (keys[pygame.K_UP] or keys[pygame.K_SPACE]) and player.on_ground == True:
                 player.vel_y = player.jump_strength
                 player.on_ground = False
-            if key[pygame.K_SLASH]:
+            if keys[pygame.K_SLASH]:
                 colorImage = pygame.Surface(player.player_image.get_size()).convert_alpha()
                 colorImage.fill(player.player_color)
                 player.player_image.blit(colorImage, (player.x, player.y), special_flags=pygame.BLEND_RGBA_MULT)
@@ -1211,6 +1241,22 @@ def main():
             for coin in coin_list:
                 coin.render_coin()
 
+            if player.player_image:
+                keys = pygame.key.get_pressed()
+
+                if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                    player.vel_x = player.move_speed
+                    player.player_now = player.player_flipped_image
+                    player.facing_left = False
+                elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                    player.vel_x = -player.move_speed
+                    player.player_now = player.player_image
+                    player.facing_left = True
+
+                if selected_character is not None:
+                    WINDOW.blit(player.player_now, (player.x, player.y))
+
+
             if player.health <= 0:
                 game_state = 'gameMenu'
                 level = 1
@@ -1223,7 +1269,7 @@ def main():
                 portal_hitbox.topleft = (portal_x, portal_y)
 
             # WINDOW.fill(PLAYER_COLOR, player)
-            WINDOW.blit(player.player_now, (player.x, player.y))
+            #WINDOW.blit(player.player_now, (player.x, player.y))
             WINDOW.blit(portal, (portal_x, portal_y))
             WINDOW.blit(level_counter1.text(), (170, 100))
             WINDOW.blit(coin_counter.text(coin_list), (300, 100))
