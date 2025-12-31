@@ -21,6 +21,7 @@ pygame.mixer.init()
 # Add Spike Collisions and finish player class
 
 # Initialize Variables
+selected_character = None
 
 # Knight
 show_message = False
@@ -290,7 +291,7 @@ exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
 def main():
     looping = True
 
-    global level, show_message2
+    global level, show_message2, selected_character
     global WINDOW
     global background
     global secret_obstacle_list
@@ -521,18 +522,20 @@ def main():
                 game_state = 'gameMenu'
             # if knight is clicked
             if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                selected_character = "knight"
                 start_time = time.time()
                 player.player_image = knight
+                player.player_flipped_image = pygame.transform.flip(knight, True, False)
                 show_message = True
-                knight_selected = True
                 text = "Knight was selected!"
                 #WINDOW.blit(k, (kx, ky)) # make the text stay for longer
 
             # if wizard is clicked
             if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                wizard_selected = True
+                selected_character = "wizard"
                 start_time2 = time.time()
                 player.player_image = wizard
+                player.player_flipped_image = pygame.transform.flip(wizard, True, False)
                 show_message2 = True
                 text2 = "Wizard was selected!"
                 #WINDOW.blit(w, (wx, wy))
@@ -1236,7 +1239,6 @@ def main():
                     player.player_now = player.player_image
                     player.facing_left = True
 
-                # draw player
                 WINDOW.blit(player.player_now, (player.x, player.y))
 
 
