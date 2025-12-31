@@ -300,6 +300,19 @@ def main():
     global show_message
 
     player = Player()
+
+    if selected_character == "wizard":
+        player.player_now = wizard
+        player.player_flipped_image = pygame.transform.flip(wizard, True, False)
+
+    elif selected_character == "knight":
+        player.player_now = knight
+        player.player_flipped_image = pygame.transform.flip(knight, True, False)
+
+    else:
+        player.player_now = knight
+        player.player_flipped_image = pygame.transform.flip(knight, True, False)
+
     ### Obstacle Setup ###
     enemy = Enemy()
     ob2X = random.randint(550, 575)
@@ -607,11 +620,11 @@ def main():
             # --- Input ---
             keys = pygame.key.get_pressed()
             player.vel_x = 0
-            if keys[pygame.K_LEFT or pygame.K_a]:
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 player.vel_x = -player.move_speed
                 player.player_now = player.player_image
                 player.facing_left = True
-            if keys[pygame.K_RIGHT or pygame.K_d]:
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player.vel_x = player.move_speed
                 player.player_now = player.player_flipped_image
                 player.facing_left = False
