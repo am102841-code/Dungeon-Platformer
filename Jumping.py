@@ -1,5 +1,3 @@
-selected_character = "wizard"
-
 player = Player()
 
 if selected_character == "wizard":
@@ -8,6 +6,11 @@ if selected_character == "wizard":
 elif selected_character == "knight":
     player.player_now = knight
     player.player_flipped_image = pygame.transform.flip(knight, True, False)
+else:
+    selected_character = "knight"
+    player.player_now = knight
+    player.player_flipped_image = pygame.transform.flip(knight, True, False)
+
 
 
 if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
@@ -25,3 +28,9 @@ if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
     player.player_flipped_image = pygame.transform.flip(wizard, True, False)
     show_message2 = True
     text2 = "Wizard was selected!"
+
+
+
+
+
+
