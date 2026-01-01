@@ -22,6 +22,8 @@ pygame.mixer.init()
 
 # Initialize Variables
 selected_character = None
+showMessage = False
+startTime = 0
 
 # Knight
 show_message = False
@@ -33,9 +35,10 @@ show_message2 = False
 start_time2 = 0
 text2 = ""
 
-
-f = pygame.font.get_fonts()
-print(f)
+# Archer
+show_message3 = False
+start_time3 = 0
+text3 = ""
 
 # Colours
 BACKGROUND = (255, 255, 255)
@@ -63,11 +66,12 @@ background = pygame.transform.scale(background, (800, 600))
 platform = pygame.image.load('PLATFORM.png').convert_alpha()
 
 # Characters Images
-knight = pygame.image.load('KNIGHT.png').convert_alpha()
-knight = pygame.transform.scale(knight, (65, 65))
+knight = pygame.image.load('KNIGHT2.png').convert_alpha()
+knight = pygame.transform.scale(knight, (100, 100))
 wizard = pygame.image.load('WIZARD.png').convert_alpha()
 wizard = pygame.transform.scale(wizard, (100, 100))
-
+archer = pygame.image.load('KNIGHT.png').convert_alpha()
+archer = pygame.transform.scale(archer, (65, 65))
 
 # music
 pygame.mixer.music.load("music0.mp3")
@@ -94,7 +98,7 @@ class Player():
         self.player_now = None
         self.x = 250
         self.y = 450
-        self.player_image = pygame.image.load('KNIGHT.png').convert_alpha()
+        self.player_image = pygame.image.load('KNIGHT2.png').convert_alpha()
         self.player_image = pygame.transform.scale(self.player_image, (65, 65))
         self.player_flipped_image = pygame.transform.flip(self.player_image, True, False)
         self.vel_y = 0
@@ -291,7 +295,7 @@ exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
 def main():
     looping = True
 
-    global level, show_message2, selected_character
+    global level, show_message2, selected_character, show_message3, showMessage, startTime
     global WINDOW
     global background
     global secret_obstacle_list
@@ -436,13 +440,18 @@ def main():
                     mouse_x, mouse_y = event.pos
 
                     if start_button.hitbox.collidepoint(mouse_x, mouse_y):
-                        level = 1
-                        level_counter1.set_number(1)
-                        player.health = player.max_health
-                        player.x = 100
-                        player.y = 500
-                        tutorial_initialized = False
-                        game_state = 'gameplay'
+                        if selected_character is None:
+                            showMessage = True
+                            startTime = pygame.time.get_ticks()  # store ms timestamp
+
+                        else:
+                            level = 1
+                            level_counter1.set_number(1)
+                            player.health = player.max_health
+                            player.x = 100
+                            player.y = 500
+                            tutorial_initialized = False
+                            game_state = 'gameplay'
 
                     elif atc_button.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'creator'
@@ -453,6 +462,17 @@ def main():
 
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'skins'
+
+            # check to show the text
+            if showMessage == True:
+                elapsed = pygame.time.get_ticks() - startTime
+                duration_ms = 2500  # how long to show in milliseconds (3 seconds)
+                if elapsed < duration_ms:
+                    fontobj = pygame.font.Font(None, 32)
+                    msg = "Choose a character from the Characters menu to play."
+                    WINDOW.blit(fontobj.render(msg, True, (255, 255, 255)), (300-150, 300-75-75))
+                else:
+                    showMessage = False
 
 
         elif game_state == "skins":
@@ -468,8 +488,8 @@ def main():
             WINDOW.blit(text, (x, y))
 
             # knight image
-            knight2 = pygame.transform.scale(knight, (120, 120))
-            WINDOW.blit(knight2, (125, 200))
+            knight2 = pygame.transform.scale(knight, (240-30-20, 240-30-20))
+            WINDOW.blit(knight2, (125-50-25+50-10+20-5, 200-20-25+40))
 
             # knight text
             font3 = pygame.font.Font(None, 32)
@@ -493,12 +513,29 @@ def main():
             hitbox2 = wizard_image.get_rect()
             hitbox2.topleft = (225, 200)
 
+            # archer image
+            archer_image = pygame.image.load("KNIGHT.png").convert_alpha()
+            archer_image = pygame.transform.scale(archer_image, (120, 120))
+            WINDOW.blit(archer_image, (265-25+15+250-100+30-10, 200))
+
+            # archer text
+            archer_text = font3.render("Archer", True, (0, 0, 0), None)
+            WINDOW.blit(archer_text, (130 + 15 + 125 + 20 + 125+30-10, 335))
+
+            # make hitbox3
+            hitbox3 = archer_image.get_rect()
+            hitbox3.topleft = (130 + 15 + 125 + 20 + 125, 335)
+
+
             # rectangle borders
             border = pygame.Rect(130-25, 200, 170-25, 170)
             pygame.draw.rect(WINDOW, (0, 0, 0), border, width=5)
 
             border2 = pygame.Rect(130-25 + 150, 200, 170-25, 170)
             pygame.draw.rect(WINDOW, (0, 0, 0), border2, width=5)
+
+            border3 = pygame.Rect(130-25 + 150+175-20-3.5, 200, 170-25, 170)
+            pygame.draw.rect(WINDOW, (0, 0, 0), border3, width=5)
 
             # elf image
             #elf = pygame.image.load("ELF.png").convert_alpha()
@@ -553,22 +590,34 @@ def main():
                 text2 = "Wizard was selected!"
                 #WINDOW.blit(w, (wx, wy))
 
+            if hitbox3.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                selected_character = "archer"
+                start_time3 = time.time()
+                # use the archer image (the smaller 'archer' surface you created earlier)
+                player.player_image = archer
+                player.player_flipped_image = pygame.transform.flip(archer, True, False)
+                show_message3 = True
+                text3 = "Archer was selected!"
+
             # Show Knight text
             if show_message == True:
                 if time.time() - start_time < 1:
-                    WINDOW.blit(exitfontobj.render("Knight was selected!", True, (0, 0, 0)), (450, 200))
+                    WINDOW.blit(exitfontobj.render("Knight was selected!", True, (0, 0, 0)), (450+75, 200-50))
                 else:
                     show_message = False
 
             # Show Wizard text
             if show_message2 == True:
                 if time.time() - start_time2 < 1:
-                    WINDOW.blit(exitfontobj.render("Wizard was selected!", True, (0, 0, 0)), (450, 200))
+                    WINDOW.blit(exitfontobj.render("Wizard was selected!", True, (0, 0, 0)), (450+75, 200-50))
                 else:
                     show_message2 = False
 
-
-
+            if show_message3 == True:
+                if time.time() - start_time3 < 1:
+                    WINDOW.blit(exitfontobj.render("Archer was selected!", True, (0, 0, 0)), (450+75, 200-50))
+                else:
+                    show_message3 = False
 
         elif game_state == 'tutorial_level':
             # Exit Button
