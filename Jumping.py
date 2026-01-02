@@ -3,27 +3,17 @@ from pygame.locals import *
 
 pygame.init()
 pygame.mixer.init()
-# IDEAS: powerups ; text ; levels ; make horizontal collisions ; borders ; portal ;
 
-# Score counter
-
-# LOG
-# finished level counter 9/17
-# made coins w/ random coins 9/17
-# score counter 10/1
-# health bar 11/28
-# tutorial level completed 11/28
-
-# Make levels and fix attack animation
-# First Level --> random generated position of obstacles
-# Next Levels --> same layout, but each level gets harder
-
-# Add Spike Collisions and finish player class
+### Priorities/ Improvements ###
+# store points as a variable so the points does nto reset to 0 after each level ends
+# add more sound effects (done 12/29 and 1/1/25)
 
 # Initialize Variables
 selected_character = None
 showMessage = False
 startTime = 0
+showMessage2 = False
+startTime2 = 0
 
 # Knight
 show_message = False
@@ -77,6 +67,12 @@ archer = pygame.transform.scale(archer, (65, 65))
 pygame.mixer.music.load("music0.mp3")
 pygame.mixer.music.set_volume(1)
 pygame.mixer.music.play(-1)
+
+# sounds [add sounds: jumping, landing on obstacle, hitting spike]
+coin_sound = pygame.mixer.Sound("collected_coin.wav")
+portal_sound = pygame.mixer.Sound("portal.wav")
+damage_sound = pygame.mixer.Sound("damage.wav")
+jumping_sound = pygame.mixer.Sound("jumping.wav")
 
 tutorial_initialized = False
 
@@ -136,6 +132,7 @@ class Spike():
 
     def collisions(self, player):
         if self.hitbox.colliderect(player.hitbox):
+            damage_sound.play()
             player.health -= 1
             player.x = 100
             player.y = 500
@@ -257,6 +254,7 @@ class Coin():
 
     def collide(self, playerHitbox):
         if self.get_hitbox().colliderect(playerHitbox) and not self.collected:
+            coin_sound.play()
             self.collected = True
 
     def randomize_pos(self):
@@ -295,7 +293,7 @@ exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
 def main():
     looping = True
 
-    global level, show_message2, selected_character, show_message3, showMessage, startTime
+    global level, show_message2, selected_character, show_message3, showMessage, startTime, showMessage2, startTime2
     global WINDOW
     global background
     global secret_obstacle_list
@@ -319,13 +317,11 @@ def main():
 
     ### Obstacle Setup ###
     enemy = Enemy()
-    ob2X = random.randint(550, 575)
-    ob2Y = random.randint(250, 275)
     obstacle_list = []
     spikes = []
     # level 1 obstacles
     obstacle_list.clear()
-    ob1 = pygame.Rect(290, 395 + 15, 100, 50)
+    ob1 = pygame.Rect(290-60, 395 + 15, 150, 40)
     ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
     obstacle_list = [ob1, ground]
 
@@ -457,7 +453,12 @@ def main():
                         game_state = 'creator'
 
                     elif tb.hitbox.collidepoint(mouse_x, mouse_y):
-                        game_state = 'tutorial_level'
+                        if selected_character is None:
+                            showMessage2 = True
+                            startTime2 = pygame.time.get_ticks()
+
+                        else:
+                            game_state = 'tutorial_level'
 
 
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
@@ -473,6 +474,16 @@ def main():
                     WINDOW.blit(fontobj.render(msg, True, (255, 255, 255)), (300-150, 300-75-75))
                 else:
                     showMessage = False
+
+            if showMessage2:
+                elapsed2 = pygame.time.get_ticks() - startTime2
+                duration_ms2 = 2500  # how long to show in milliseconds (3 seconds)
+                if elapsed2 < duration_ms2:
+                    fontobj = pygame.font.Font(None, 32)
+                    msg2 = "Choose a character from the Characters menu to play."
+                    WINDOW.blit(fontobj.render(msg2, True, (255, 255, 255)), (300-150, 300-75-75))
+                else:
+                    showMessage2 = False
 
 
         elif game_state == "skins":
@@ -644,7 +655,7 @@ def main():
             WINDOW.fill('lightblue')
 
             font2 = pygame.font.SysFont(None, 36)
-            text_surface = font2.render("Use arrow keys to move and jump!", True, (155, 155, 155))
+            text_surface = font2.render("Use the arrow or letter keys to move and jump!", True, (155, 155, 155))
 
 
             if tutorial_initialized == False:
@@ -655,9 +666,9 @@ def main():
                 player.on_ground = False
                 player.hitbox.topleft = (player.x, player.y)
 
-                ob1 = pygame.Rect(100, 450-50, 200, 50)
-                ob2 = pygame.Rect(400, 350, 100, 50)
-                spikes.append(Spike(450, 300))
+                ob1 = pygame.Rect(375 - 150, WINDOW_HEIGHT - 200 + 75, 200, 40)
+                ob2 = pygame.Rect(ob1.x + ob1.width + 50, ob1.y - 75, 250, 40)
+                spikes.append(Spike(ob2.x+60, ob2.y-60+15))
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
                 obstacle_list = [ob1, ob2, ground]
 
@@ -678,7 +689,9 @@ def main():
                 player.player_now = player.player_flipped_image
                 player.facing_left = False
             if (keys[pygame.K_UP] or keys[pygame.K_SPACE]) and player.on_ground:
+                jumping_sound.play()
                 player.vel_y = player.jump_strength
+                #coin_sound.play()
                 player.on_ground = False
 
             # --- Horizontal movement and collision ---
@@ -710,7 +723,7 @@ def main():
 
 
             WINDOW.blit(background, (0, 0))
-            WINDOW.blit(text_surface, (200, 150))
+            WINDOW.blit(text_surface, (200-75, 150))
             exit_button.render_button()
             WINDOW.blit(ExitText, (x, y))
             if selected_character is not None:
@@ -732,11 +745,6 @@ def main():
 
 
             #WINDOW.blit(Spike.image, Spike.hitbox.topleft)
-
-
-
-
-
 
         elif game_state == 'tutorial':
             WINDOW.fill('lightblue')
@@ -903,7 +911,9 @@ def main():
                 player.player_now = player.player_flipped_image
                 player.facing_left = False
             if (keys[pygame.K_UP] or keys[pygame.K_SPACE]) and player.on_ground == True:
+                jumping_sound.play()
                 player.vel_y = player.jump_strength
+                #coin_sound.play()
                 player.on_ground = False
             if keys[pygame.K_SLASH]:
                 colorImage = pygame.Surface(player.player_image.get_size()).convert_alpha()
@@ -911,26 +921,31 @@ def main():
                 player.player_image.blit(colorImage, (player.x, player.y), special_flags=pygame.BLEND_RGBA_MULT)
 
             if player.hitbox.colliderect(portal_hitbox) and level == 1:
-                player.player_reset = True
+                portal_sound.play()
+                player.player_reset = True 
                 level = 2
                 level_changing = True
                 level_counter1.set_number(int(level))
             elif player.hitbox.colliderect(portal_hitbox) and (level == 2 or level == 'secret'):
+                portal_sound.play()
                 player.player_reset = True
                 level = 3
                 level_changing = True
                 level_counter1.set_number(int(level))
             elif player.hitbox.colliderect(portal_hitbox) and level == 3:
+                portal_sound.play()
                 player.player_reset = True
                 level = 4
                 level_changing = True
                 level_counter1.set_number(int(level))
             elif player.hitbox.colliderect(portal_hitbox) and level == 4:
+                portal_sound.play()
                 player.player_reset = True
                 level = 5
                 level_changing = True
                 level_counter1.set_number(int(level))
             elif player.hitbox.colliderect(portal_hitbox) and level == 5:
+                portal_sound.play()
                 player.player_reset = True
                 level = 6
                 level_changing = True
@@ -960,9 +975,9 @@ def main():
                     player.player_reset = False
 
                 # obstacles
-                ob2 = pygame.Rect(random.randint(550, 575), random.randint(260, 275), 125, 50)
-                ob3 = pygame.Rect(450, 450, 175, 50)
-                ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50, 650 / 2 - 70 - 25, 50, 50)  # secret level block
+                ob2 = pygame.Rect(565 - 200, 270+40, 200, 40)
+                ob3 = pygame.Rect(450-200, 450, 175, 40)
+                ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50 + 1000, 650 / 2 - 70 - 25, 50, 40)  # secret level block
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
 
                 # coins
@@ -970,9 +985,15 @@ def main():
                 coin1.randomize_pos()
                 coin_list.append(coin1)
 
+                coin2 = Coin(ob3.left + ob3.width / 2 + 20, ob3.top - 25 - 15)
+                coin_list.append(coin2)
+
+                coin3 = Coin(ob3.left + ob3.width / 2 - 50, ob3.top - 25 - 15)
+                coin_list.append(coin3)
+
                 # lists
                 obstacle_list = [ob2, ob3, ground]
-                coin_list = [coin1]
+                coin_list = [coin1, coin2, coin3]
 
 
                 pygame.draw.rect(WINDOW, (255, 0, 0), enemy.player_rect)
@@ -1039,11 +1060,11 @@ def main():
                     player.player_reset = False
 
                 # ob1 = pygame.Rect(x, y, width, height)
-                ob1 = pygame.Rect(200, 400, 200, 50)  # long platform with spike1
-                ob2 = pygame.Rect(450, 290, 50, 50)  # make grey
-                ob4 = pygame.Rect(550, 175, 160, 50)
+                ob1 = pygame.Rect(375, 600-100-200+100+50, 175, 40)
+                ob2 = pygame.Rect(250-75, 600-120-250+100+50-85, 175, 40)  # make grey
+                ob4 = pygame.Rect(ob2.x-200+400+50, ob2.y-125, 100, 40)
                 spikes.clear()
-                spikes.append(Spike(550+75, 150+25-50))
+                #spikes.append(Spike(550+75, 150+25-50))
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
                 # lists
@@ -1115,9 +1136,9 @@ def main():
                     player.player_reset = False
 
                 # obstacles
-                ob1 = pygame.Rect(200, 425, 100, 50)
+                ob1 = pygame.Rect(200-80, 425, 200, 50)
                 ob2 = pygame.Rect(250 + 25, 225 + 50 + 30, 50, 50) # filled with grey
-                ob3 = pygame.Rect(ob2.x + 40 + 75, ob2.y - 75 + 35, 125, 50) # add coin on top
+                ob3 = pygame.Rect(ob2.x + 40 + 75-50, ob2.y - 75 + 35, 200, 50) # add coin on top
                 ob4 = pygame.Rect(ob3.x + 100 + 50, ob3.y - 75, 50, 50) # filled with grey
                 ob5 = pygame.Rect(ob4.x + 75 + 75, ob4.y, 50, 50) # filled with grey
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
@@ -1128,7 +1149,7 @@ def main():
 
                 # spikes
                 spikes.clear()
-                spikes.append(Spike(ob3.x + 20, ob3.y - ob3.height))
+                spikes.append(Spike(ob3.x + 20 + 30, ob3.y - ob3.height))
                 spikes.append(Spike(800-175, 100))
 
                 # coins
@@ -1240,7 +1261,7 @@ def main():
                 WINDOW.blit(platform_img, rect.topleft)
 
             if level == 2:
-                portal_x = 680
+                portal_x = 680 - 100
                 portal_y = 100
                 portal_hitbox.topleft = (portal_x, portal_y)
                 #pygame.draw.rect(WINDOW, (0, 0, 0), ob5)
@@ -1256,7 +1277,7 @@ def main():
 
 
             if level == 3:
-                portal_x = WINDOW_WIDTH - 75 - 20
+                portal_x = WINDOW_WIDTH - 75 - 20 - 150
                 portal_y = 50
                 portal_hitbox.topleft = (portal_x, portal_y)
                 for spike in spikes:
@@ -1307,6 +1328,11 @@ def main():
 
 
             if player.health <= 0:
+                game_state = "Died_screen"
+                if game_state == "Died_screen":
+                    WINDOW.fill("lightgrey")
+                    fonts = pygame.font.Font(None, 64)
+                    fonts.render("Game Over!", True, (0, 0, 0), None)
                 game_state = 'gameMenu'
                 level = 1
                 player.health = player.max_health
