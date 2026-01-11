@@ -9,11 +9,14 @@ pygame.mixer.init()
 # add more sound effects (done 12/29 and 1/1/25)
 
 # Initialize Variables
+points = 0
 selected_character = None
 showMessage = False
 startTime = 0
 showMessage2 = False
 startTime2 = 0
+points_added = False
+pulse_side = "right"
 
 # Knight
 show_message = False
@@ -62,6 +65,13 @@ wizard = pygame.image.load('WIZARD.png').convert_alpha()
 wizard = pygame.transform.scale(wizard, (100, 100))
 archer = pygame.image.load('KNIGHT.png').convert_alpha()
 archer = pygame.transform.scale(archer, (65, 65))
+start_img = pygame.image.load('start_button.png').convert_alpha()
+start_img = pygame.transform.scale(start_img, (160, 120))
+# center stores the (x, y) coordinates
+start_rect = start_img.get_rect(center=(WINDOW_WIDTH // 2 - 60 - 15 - 20- 10, WINDOW_HEIGHT // 2 + 75 - 40 + 20))
+creator_img = pygame.image.load('creator_button.png').convert_alpha()
+creator_img = pygame.transform.scale(creator_img, (152*1.5, 152*1.5+20))
+creator_rect = creator_img.get_rect(center=(WINDOW_WIDTH // 2 - 60 - 15 + 100 + 75+50-15-10 - 10, WINDOW_HEIGHT // 2 + 75 + 6.5- 40 + 20 + 75-50+40-15-4.5))
 
 # music
 pygame.mixer.music.load("music0.mp3")
@@ -73,6 +83,19 @@ coin_sound = pygame.mixer.Sound("collected_coin.wav")
 portal_sound = pygame.mixer.Sound("portal.wav")
 damage_sound = pygame.mixer.Sound("damage.wav")
 jumping_sound = pygame.mixer.Sound("jumping.wav")
+
+# setting up player animations to loop forever in game menu
+
+GROUND_Y = WINDOW_HEIGHT - knight.get_height()
+menu_x = -64
+menu_y = GROUND_Y
+
+menu_x_speed = 2*3 # sets the speed fo the character
+menu_y_speed = 0
+
+menu_on_ground = True
+menu_jump_timer = 0
+
 
 tutorial_initialized = False
 
@@ -167,13 +190,9 @@ class score_counter():
     def __init__(self):
         pass
 
-    def text(self, coin_list):
-        score = 0
-        for coin in coin_list:
-            if coin.collected:  # Checks if coin is collected
-                score += 1
+    def text(self, coin_list=None):
         fontObj = pygame.font.Font(None, 32)
-        textSufaceObj = fontObj.render("Points: " + str(score), True, TEXT_COLOR, None)
+        textSufaceObj = fontObj.render("Points: " + str(points), True, TEXT_COLOR, None)
         return textSufaceObj
 
 
@@ -250,12 +269,14 @@ class Coin():
     def render_coin(self):
         if not self.collected:
             # Draw a simple yellow circle
-            pygame.draw.circle(WINDOW, (255, 215, 0), (int(self.x + self.width / 2), int(self.y + self.height / 2)), self.width // 2)
+            pygame.draw.circle(WINDOW, (255, 215, 0), (int(self.x + self.width / 2 ), int(self.y + self.height / 2)), self.width // 2)
 
     def collide(self, playerHitbox):
+        global points
         if self.get_hitbox().colliderect(playerHitbox) and not self.collected:
             coin_sound.play()
             self.collected = True
+            points += 1
 
     def randomize_pos(self):
         self.x += random.randint(-30, 30)
@@ -300,6 +321,9 @@ def main():
     global tutorial_initialized
     global spikes
     global show_message
+    global points, points_added
+    global menu_jump_timer, menu_on_ground, menu_x_speed, menu_y_speed, menu_y, menu_x
+    global jumping_sound
 
     player = Player()
 
@@ -314,6 +338,11 @@ def main():
     else:
         player.player_now = knight
         player.player_flipped_image = pygame.transform.flip(knight, True, False)
+
+    # calculate pulse value (abs = absolute value)
+    #pulse_value = 0
+    #if level == 5:
+        #pulse_value = abs(pygame.frame.get_ticks() % 600 - 300) / 300
 
     ### Obstacle Setup ###
     enemy = Enemy()
@@ -376,30 +405,12 @@ def main():
             test_button = button(0, 0, 100, 100, 'orange', 'hello', None)
             # test_button.render_button()
 
-            # Start Button
-            start_button = button(WINDOW.get_width() / 2 - 50 - 100, WINDOW.get_height() / 2, 100, 100, (160, 160, 160),
-                                  'start', None)
-            start_button.render_button()
-            startfontobj = pygame.font.Font(None, 32)
+            # start button
+            WINDOW.blit(start_img, start_rect)
 
-            # Start Button text
-            StartText = startfontobj.render("Start", True, GREY, None)
-            x = WINDOW.get_width() / 2 - PlatformerText.get_width() / 2 + 80 - 150 + 50 + 75 + 50 - 20
-            y = 334
+            # creator button
+            WINDOW.blit(creator_img, creator_rect)
 
-            WINDOW.blit(StartText, (x, y))
-
-            # About the creator button
-            atc_button = button(WINDOW.get_width() / 2 - 50 + 78, WINDOW.get_height() / 2, 100, 100, (160, 160, 160),
-                                'Creator', None)
-            atc_button.render_button()
-            atcfontobj = pygame.font.Font(None, 32)
-
-            # Creater button text
-            atcText = atcfontobj.render("Creator", True, GREY, None)
-            x = WINDOW.get_width() / 2 - atcText.get_width() / 2 + 80
-            y = WINDOW.get_height() / 2 - 45 - atcText.get_height() / 2 + 100 - 10
-            WINDOW.blit(atcText, (x, y))
 
             # Tutorial Button
             x = 50
@@ -427,6 +438,9 @@ def main():
             y = skins.y + skins.height/2- 10
             WINDOW.blit(text, (x, y))
 
+
+
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -435,7 +449,7 @@ def main():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
 
-                    if start_button.hitbox.collidepoint(mouse_x, mouse_y):
+                    if start_rect.collidepoint(mouse_x, mouse_y):
                         if selected_character is None:
                             showMessage = True
                             startTime = pygame.time.get_ticks()  # store ms timestamp
@@ -449,7 +463,7 @@ def main():
                             tutorial_initialized = False
                             game_state = 'gameplay'
 
-                    elif atc_button.hitbox.collidepoint(mouse_x, mouse_y):
+                    elif creator_rect.collidepoint(mouse_x, mouse_y):
                         game_state = 'creator'
 
                     elif tb.hitbox.collidepoint(mouse_x, mouse_y):
@@ -463,6 +477,8 @@ def main():
 
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'skins'
+
+
 
             # check to show the text
             if showMessage == True:
@@ -484,6 +500,33 @@ def main():
                     WINDOW.blit(fontobj.render(msg2, True, (255, 255, 255)), (300-150, 300-75-75))
                 else:
                     showMessage2 = False
+
+            # player animation
+            menu_x += menu_x_speed
+
+            if menu_x > WINDOW_WIDTH:
+                menu_x = -64
+
+
+            menu_jump_timer += 1
+            if menu_jump_timer > 120/2 and menu_on_ground:  # 120 frames = 2 seconds [this value sets how much the character jumps when going across the screen
+                menu_y_speed = -15  # jump
+                menu_on_ground = False
+                if not jumping_sound.get_num_channels():
+                    jumping_sound.play()  # sound
+                menu_jump_timer = 0  # reset timer
+
+            menu_y_speed += 1
+            menu_y += menu_y_speed
+
+            if menu_y >= GROUND_Y:
+                menu_y = GROUND_Y
+                menu_y_speed = 0
+                menu_on_ground = True
+
+            WINDOW.blit(knight, (menu_x, menu_y))
+
+            pygame.display.update()
 
 
         elif game_state == "skins":
@@ -922,7 +965,7 @@ def main():
 
             if player.hitbox.colliderect(portal_hitbox) and level == 1:
                 portal_sound.play()
-                player.player_reset = True 
+                player.player_reset = True
                 level = 2
                 level_changing = True
                 level_counter1.set_number(int(level))
@@ -977,7 +1020,7 @@ def main():
                 # obstacles
                 ob2 = pygame.Rect(565 - 200, 270+40, 200, 40)
                 ob3 = pygame.Rect(450-200, 450, 175, 40)
-                ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50 + 1000, 650 / 2 - 70 - 25, 50, 40)  # secret level block
+                ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50 - 250, 650 / 2 - 70 - 25, 50, 40)  # secret level block
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
 
                 # coins
@@ -1000,12 +1043,12 @@ def main():
             if level == 2 and not level_changing:
                 if player.hitbox.colliderect(ob5):
                     player.player_reset = True
-                    level_counter1.set_number(str('secret level'))
+                    level_counter1.set_number(str('secret'))
                     level_changing = True
                     print("touched secret level")
-                    level = '  secret'
-                    WINDOW = pygame.display.set_mode((WINDOW_WIDTH + 400, WINDOW_HEIGHT))
-                    background = pygame.transform.scale(background, (800 + 400, 600))
+                    level = "secret"
+                    WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+                    background = pygame.transform.scale(background, (800, 600))
 
             # secret level
             if level == "secret" and level_changing:
@@ -1016,15 +1059,20 @@ def main():
                     player.y = 500
                     player.player_reset = False
 
-                # obstacles
-                ob1 = (pygame.Rect(350, 560, 100, 50), (255, 50, 50))# middle - red
-                ob2 = (pygame.Rect(300, 490, 120, 50), (139, 60, 19)) # left - brown??
-                ob3 = (pygame.Rect(450, 500, 75, 50), (0, 102, 204)) # right - blue
-                ground = pygame.Rect((0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10), (0, 0, 0))
+                portal_x, portal_y = 300, 100
+                portal_hitbox.topleft = (portal_x, portal_y)
 
+
+
+                '''
+                # obstacles
+                ob1 = pygame.Rect(350, 560, 100, 50)# middle - red
+                ob2 = pygame.Rect(300, 490, 120, 50) # left - brown??
+                ob3 = pygame.Rect(450, 500, 75, 50) # right - blue
+                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
                 # lists
                 coin_list = []
-                obstacle_list = [ob1, ob2, ob3, ground]
+                obstacle_list = [ground]
 
                 # coins
                 coin1 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
@@ -1038,6 +1086,11 @@ def main():
                 coin3 = Coin(ob3.left + ob3.width / 2, ob3.top - 25 - 15)
                 coin3.randomize_pos()
                 coin_list.append(coin3)
+
+                for rect in obstacle_list:
+                    # Fill with a color
+                    pygame.draw.rect(WINDOW, (128, 128, 128), rect)
+                '''
 
 
             if level == "secret" and not level_changing:
@@ -1208,6 +1261,9 @@ def main():
 
             for coin in coin_list:
                 coin.collide(player.hitbox)
+                if points_added:
+                    points += 1
+                    points_added = False
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -1258,7 +1314,7 @@ def main():
                     if rect == ob2:
                         platform_img.fill((128, 128, 128))
 
-                WINDOW.blit(platform_img, rect.topleft)
+                WINDOW.blit(platform_img, (rect.x, rect.y))
 
             if level == 2:
                 portal_x = 680 - 100
@@ -1267,7 +1323,7 @@ def main():
                 #pygame.draw.rect(WINDOW, (0, 0, 0), ob5)
                 platform_img = pygame.transform.scale(platform_img, (ob5.width, ob5.height))
                 platform_img.fill((128, 128, 128))
-                WINDOW.blit(platform_img, ob5.topleft)
+                WINDOW.blit(platform_img, (ob5.x, ob5.y))
 
             if level == 'secret':
                 portal_x = 680 + 250
@@ -1301,6 +1357,9 @@ def main():
                 portal_x = WINDOW_WIDTH - 95
                 portal_y = 50
                 portal_hitbox.topleft = (portal_x, portal_y)
+                #pulse_surface = pygame.Surface((40, WINDOW_HEIGHT), pygame.SRCALPHA)
+                #pulse_surface.fill((100, 100, 225, int(80 + pulse_value * 120)))
+                #WINDOW.blit(pulse_surface, (WINDOW_WIDTH - 40, 0))
                 for spike in spikes:
                     WINDOW.blit(spike.image, (spike.x, spike.y))
 
@@ -1347,7 +1406,7 @@ def main():
             #WINDOW.blit(player.player_now, (player.x, player.y))
             WINDOW.blit(portal, (portal_x, portal_y))
             WINDOW.blit(level_counter1.text(), (170, 100))
-            WINDOW.blit(coin_counter.text(coin_list), (300, 100))
+            WINDOW.blit(coin_counter.text(), (300, 100))
             # WINDOW.blit(portal_surface, (680, 100-50))
         pygame.display.update()
         fpsClock.tick(FPS)
