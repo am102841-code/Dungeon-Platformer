@@ -91,7 +91,7 @@ menu_x = -64
 menu_y = GROUND_Y
 
 menu_x_speed = 2*3 # sets the speed fo the character
-menu_y_speed = 0
+menu_y_speed = 0.8
 
 menu_on_ground = True
 menu_jump_timer = 0
@@ -509,7 +509,7 @@ def main():
 
 
             menu_jump_timer += 1
-            if menu_jump_timer > 120/2 and menu_on_ground:  # 120 frames = 2 seconds [this value sets how much the character jumps when going across the screen
+            if menu_jump_timer > 120/4 + 5 and menu_on_ground:  # 120 frames = 2 seconds [this value sets how much the character jumps when going across the screen
                 menu_y_speed = -15  # jump
                 menu_on_ground = False
                 if not jumping_sound.get_num_channels():
@@ -527,6 +527,7 @@ def main():
             WINDOW.blit(knight, (menu_x, menu_y))
 
             pygame.display.update()
+            clock.tick(60)
 
 
         elif game_state == "skins":
@@ -1018,7 +1019,7 @@ def main():
                     player.player_reset = False
 
                 # obstacles
-                ob2 = pygame.Rect(565 - 200, 270+40, 200, 40)
+                ob2 = pygame.Rect(565 - 200, 270+40)
                 ob3 = pygame.Rect(450-200, 450, 175, 40)
                 ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50 - 250, 650 / 2 - 70 - 25, 50, 40)  # secret level block
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
