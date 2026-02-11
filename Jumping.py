@@ -83,6 +83,7 @@ coin_sound = pygame.mixer.Sound("collected_coin.wav")
 portal_sound = pygame.mixer.Sound("portal.wav")
 damage_sound = pygame.mixer.Sound("damage.wav")
 jumping_sound = pygame.mixer.Sound("jumping.wav")
+selected_sound = pygame.mixer.Sound("select.wav")
 
 # setting up player animations to loop forever in game menu
 
@@ -627,6 +628,7 @@ def main():
             # if knight is clicked
             if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 selected_character = "knight"
+                selected_sound.play()
                 start_time = time.time()
                 player.player_image = knight
                 player.player_flipped_image = pygame.transform.flip(knight, True, False)
@@ -637,6 +639,7 @@ def main():
             # if wizard is clicked
             if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 selected_character = "wizard"
+                selected_sound.play()
                 start_time2 = time.time()
                 player.player_image = wizard
                 player.player_flipped_image = pygame.transform.flip(wizard, True, False)
@@ -646,6 +649,7 @@ def main():
 
             if hitbox3.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 selected_character = "archer"
+                selected_sound.play()
                 start_time3 = time.time()
                 # use the archer image (the smaller 'archer' surface you created earlier)
                 player.player_image = archer
