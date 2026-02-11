@@ -1,15 +1,12 @@
 # 🏰 Dungeon Platformer
 
-Dungeon Platformer is a **2D dungeon-themed platformer** inspired by games like *Terraria* and *Rogue-like platformers*. The game has been in development for **over two years**, with frequent updates and improvements.
+Dungeon Platformer is a **2D dungeon-themed platformer** inspired by games like *Terraria* and other *Rogue-like platformers*. The game has been in development for **over three years**, with frequent updates and improvements.
 
 Each level features **unique dungeon music**, with tracks that change from **levels 1–5**, creating an immersive atmosphere as you progress.
 
 ---
 
-## 🎮 Play the Game
-👉 **Play here:**  
-https://platformer-webpage--am102841.replit.app/
-
+## 🎮 Dev Log 
 👉 **Check out my Dev Log here:**  
 https://github.com/am102841-code/Dungeon-Platformer/wiki
 
@@ -24,15 +21,18 @@ Go into the portal to enter the next level
 
 Avoid spikes as they cause health to decrease 
 
+In the game, there is a turoial level to help players understand the game mechanics
 
 ---
 
 ## 🧩 Features
-- Classic 2D platformer gameplay  
+- Classic 2D platformer gameplay with physics engine 
 - Dungeon-themed environments  
 - Level-based music that changes as you progress  
 - Smooth player movement and level design  
-- Ongoing updates and improvements  
+- Ongoing updates and improvements
+- Smooth sound effects
+- Game Menu 
 
 ---
 
@@ -47,7 +47,8 @@ Planned features include:
 - In-game shop  
 - Multiple player skins  
 - Sprite sheet animations (player & coins)  
-- Multiplayer support  
+- Multiplayer support
+- More levels (15+) 
 
 ---
 
