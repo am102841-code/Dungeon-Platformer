@@ -1,4 +1,4 @@
-Spike Class
+#Spike Class
 class Spike():
     def __init__(self, x, y):
         self.x = x
