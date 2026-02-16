@@ -393,7 +393,9 @@ def main():
             knight_selected = True
             wizard_selected = False
 
-            background_img = pygame.image.load('game_menu.png').convert_alpha()
+            mouse_pos = pygame.mouse.get_pos()
+
+            background_img = pygame.image.load('DUNGEON.jpg').convert_alpha()
             background_img = pygame.transform.scale(background_img, (800, 600))
             WINDOW.blit(background_img, (0, 0))
 
@@ -401,7 +403,7 @@ def main():
             title_text = "Dungeon Platformer"
 
             # shadow for title
-            shadow_surface = fontObj.render(title_text, True, GREY)
+            shadow_surface = fontObj.render(title_text, True, (0, 0, 0))
             x = int(WINDOW.get_width() / 2 - shadow_surface.get_width() / 2)
             y = int(WINDOW.get_height() / 2 - 45 - shadow_surface.get_height() / 2) - 35
             WINDOW.blit(shadow_surface, (x + 3, y + 3))
@@ -414,7 +416,14 @@ def main():
             sx = 280
             sy = 250 + 10 + 17.5 + 17.5 + 5 + 2
             start_button = button(sx, sy, 200, 50, (160, 160, 160), 'start', None)
+
+            if start_button.hitbox.collidepoint(mouse_pos):
+                start_button.color = (130, 130, 130)
+            else:
+                start_button.color = (160, 160, 160)
+
             start_button.render_button()
+
             FONT = pygame.font.Font(None, 32)
             txt = FONT.render("Start", True, GREY, None)
             tx = sx + start_button.width / 2 - 30 - 5 + 7.5
@@ -425,6 +434,11 @@ def main():
             x = 280
             y = 330 + 17.5 + 17.5 - 2.5
             button2 = button(x, y, 200, 50, (160, 160, 160), 'creator', None)
+            if button2.hitbox.collidepoint(mouse_pos):
+                button2.color = (130, 130, 130)
+            else:
+                button2.color = (160, 160, 160)
+
             button2.render_button()
             FONT = pygame.font.Font(None, 32)
             txt = FONT.render("Creator", True, GREY, None)
@@ -436,6 +450,12 @@ def main():
             x = 280
             y = 410 + 17.5
             tb = button(x, y, 200, 100 / 2, (160, 160, 160), 'tutorial', None)
+
+            if tb.hitbox.collidepoint(mouse_pos):
+                tb.color = (130, 130, 130)
+            else:
+                tb.color = (160, 160, 160)
+
             tb.render_button()
             tbfontobj = pygame.font.Font(None, 32)
             txt = tbfontobj.render("Tutorial", True, GREY, None)
@@ -449,6 +469,12 @@ def main():
             new_x = 280
             new_y = 490
             skins = button(new_x, new_y, tb.width, tb.height, (160, 160, 160), 'Characters', None)
+
+            if skins.hitbox.collidepoint(mouse_pos):
+                skins.color = (130, 130, 130)
+            else:
+                skins.color = (160, 160, 160)
+
             skins.render_button()
             font3 = pygame.font.Font(None, 32)
             text = font3.render("Characters", True, GREY, None)
@@ -863,6 +889,10 @@ def main():
             WINDOW.fill('lightgrey')
 
             Titlefontobj = pygame.font.Font(None, 64)
+
+            pygame.mixer.music.load("creator_music.mp3")
+            pygame.mixer.music.set_volume(1)
+            pygame.mixer.music.play(-1)
 
             # text
             Title = Titlefontobj.render("About the Creator: Ankitha Mukund", True, TEXT_COLOR, None)
