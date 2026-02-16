@@ -239,6 +239,7 @@ class coin_animation():
         return self.frames[self.frame_index]
 
 
+
 # Score counter
 # When player collides --> coin dissapears and score goes up by 1
 
@@ -396,65 +397,75 @@ def main():
             background_img = pygame.transform.scale(background_img, (800, 600))
             WINDOW.blit(background_img, (0, 0))
 
-            #WINDOW.fill('light blue')
             fontObj = pygame.font.Font(None, 64)
-            PlatformerText = fontObj.render("Dungeon Platformer", True, GREY, None)
-            WINDOW.blit(PlatformerText, (WINDOW.get_width() / 2 - PlatformerText.get_width() / 2,
-                                         WINDOW.get_height() / 2 - 45 - PlatformerText.get_height() / 2))
+            title_text = "Dungeon Platformer"
 
-            # Test Button
+            # shadow for title
+            shadow_surface = fontObj.render(title_text, True, GREY)
+            x = int(WINDOW.get_width() / 2 - shadow_surface.get_width() / 2)
+            y = int(WINDOW.get_height() / 2 - 45 - shadow_surface.get_height() / 2) - 35
+            WINDOW.blit(shadow_surface, (x + 3, y + 3))
+            title_surface = fontObj.render(title_text, True, TEXT_COLOR)
+            WINDOW.blit(title_surface, (x, y))
+
             test_button = button(0, 0, 100, 100, 'orange', 'hello', None)
-            # test_button.render_button()
 
-            # start button
-            WINDOW.blit(start_img, start_rect)
+            # Start Button
+            sx = 280
+            sy = 250 + 10 + 17.5 + 17.5 + 5 + 2
+            start_button = button(sx, sy, 200, 50, (160, 160, 160), 'start', None)
+            start_button.render_button()
+            FONT = pygame.font.Font(None, 32)
+            txt = FONT.render("Start", True, GREY, None)
+            tx = sx + start_button.width / 2 - 30 - 5 + 7.5
+            ty = sy + start_button.height / 2 - 5 - 5
+            WINDOW.blit(txt, (tx, ty))
 
-            # creator button
-            WINDOW.blit(creator_img, creator_rect)
-
+            # Creator Button
+            x = 280
+            y = 330 + 17.5 + 17.5 - 2.5
+            button2 = button(x, y, 200, 50, (160, 160, 160), 'creator', None)
+            button2.render_button()
+            FONT = pygame.font.Font(None, 32)
+            txt = FONT.render("Creator", True, GREY, None)
+            tx = x + button2.width / 2 - 30 - 5
+            ty = y + button2.height / 2 - 5 - 5
+            WINDOW.blit(txt, (tx, ty))
 
             # Tutorial Button
-            x = 50
-            y = 20
+            x = 280
+            y = 410 + 17.5
             tb = button(x, y, 200, 100 / 2, (160, 160, 160), 'tutorial', None)
             tb.render_button()
             tbfontobj = pygame.font.Font(None, 32)
-
-            # Tutorial Button text
             txt = tbfontobj.render("Tutorial", True, GREY, None)
-            x = 100
-            y = 45 - 10
-            WINDOW.blit(txt, (x, y))
+            tx = tb.x + tb.width / 2 - 30 - 5
+            ty = tb.y + tb.height / 2 - 5 - 5
+            WINDOW.blit(txt, (tx, ty))
 
-            # Characters button
-            x = 50 + tb.width/3 + 150
+            # Characters Button
+            x = 50 + tb.width / 3 + 150
             y = 20
-            skins = button(x, y, tb.width, tb.height, (160, 160, 160), 'Characters', None)
+            new_x = 280
+            new_y = 490
+            skins = button(new_x, new_y, tb.width, tb.height, (160, 160, 160), 'Characters', None)
             skins.render_button()
             font3 = pygame.font.Font(None, 32)
-
-            # text
             text = font3.render("Characters", True, GREY, None)
-            x = skins.x + skins.width/2 - 50 - 7.5
-            y = skins.y + skins.height/2- 10
+            x = skins.x + skins.width / 2 - 50 - 7.5
+            y = skins.y + skins.height / 2 - 10
             WINDOW.blit(text, (x, y))
-
-
-
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
-
-                    if start_rect.collidepoint(mouse_x, mouse_y):
+                    if start_button.hitbox.collidepoint(mouse_x, mouse_y):
                         if selected_character is None:
                             showMessage = True
-                            startTime = pygame.time.get_ticks()  # store ms timestamp
-
+                            startTime = pygame.time.get_ticks()
                         else:
                             level = 1
                             level_counter1.set_number(1)
@@ -463,45 +474,36 @@ def main():
                             player.y = 500
                             tutorial_initialized = False
                             game_state = 'gameplay'
-
-                    elif creator_rect.collidepoint(mouse_x, mouse_y):
+                    elif button2.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'creator'
-
                     elif tb.hitbox.collidepoint(mouse_x, mouse_y):
                         if selected_character is None:
                             showMessage2 = True
                             startTime2 = pygame.time.get_ticks()
-
                         else:
                             game_state = 'tutorial_level'
-
-
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'skins'
 
-
-
-            # check to show the text
-            if showMessage == True:
+            if showMessage:
                 elapsed = pygame.time.get_ticks() - startTime
-                duration_ms = 2500  # how long to show in milliseconds (3 seconds)
+                duration_ms = 2500
                 if elapsed < duration_ms:
                     fontobj = pygame.font.Font(None, 32)
                     msg = "Choose a character from the Characters menu to play."
-                    WINDOW.blit(fontobj.render(msg, True, (255, 255, 255)), (300-150, 300-75-75))
+                    WINDOW.blit(fontobj.render(msg, True, (255, 255, 255)), (300 - 150, 300 - 75 - 75))
                 else:
                     showMessage = False
 
             if showMessage2:
                 elapsed2 = pygame.time.get_ticks() - startTime2
-                duration_ms2 = 2500  # how long to show in milliseconds (3 seconds)
+                duration_ms2 = 2500
                 if elapsed2 < duration_ms2:
                     fontobj = pygame.font.Font(None, 32)
                     msg2 = "Choose a character from the Characters menu to play."
-                    WINDOW.blit(fontobj.render(msg2, True, (255, 255, 255)), (300-150, 300-75-75))
+                    WINDOW.blit(fontobj.render(msg2, True, (255, 255, 255)), (300 - 150, 300 - 75 - 75))
                 else:
                     showMessage2 = False
-
             # player animation
             menu_x += menu_x_speed
 
