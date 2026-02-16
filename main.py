@@ -33,6 +33,8 @@ show_message3 = False
 start_time3 = 0
 text3 = ""
 
+creator_music_playing = False
+
 # Colours
 BACKGROUND = (255, 255, 255)
 OBSTACLE_COLOR = (0, 0, 0)
@@ -885,14 +887,27 @@ def main():
 
         # Creator Page
         elif game_state == 'creator':
+            global creator_music_playing
             # mouseClicked = False
             WINDOW.fill('lightgrey')
 
             Titlefontobj = pygame.font.Font(None, 64)
+            if not creator_music_playing:
+                pygame.mixer.music.load("CREATOR_MUSIC.mp3")
+                pygame.mixer.music.set_volume(1)
+                pygame.mixer.music.play(-1)
+                creator_music_playing = True
 
-            pygame.mixer.music.load("creator_music.mp3")
-            pygame.mixer.music.set_volume(1)
-            pygame.mixer.music.play(-1)
+            # text box
+            x = 80
+            y = 150
+            width = 500
+            height = 250
+
+            text_box = pygame.Surface((width, height))
+            text_box.fill((200, 200, 200))
+            text_box.set_alpha(220) # transparent
+            WINDOW.blit(text_box, (x, y))
 
             # text
             Title = Titlefontobj.render("About the Creator: Ankitha Mukund", True, TEXT_COLOR, None)
@@ -968,6 +983,7 @@ def main():
             # Check EXIT button click
             if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 game_state = 'gameMenu'
+                creator_music_playing = False
 
 
         elif game_state == 'gameplay':
