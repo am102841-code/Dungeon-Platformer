@@ -69,6 +69,7 @@ archer = pygame.image.load('KNIGHT.png').convert_alpha()
 archer = pygame.transform.scale(archer, (65, 65))
 start_img = pygame.image.load('start_button.png').convert_alpha()
 start_img = pygame.transform.scale(start_img, (160, 120))
+
 # center stores the (x, y) coordinates
 start_rect = start_img.get_rect(center=(WINDOW_WIDTH // 2 - 60 - 15 - 20- 10, WINDOW_HEIGHT // 2 + 75 - 40 + 20))
 creator_img = pygame.image.load('creator_button.png').convert_alpha()
@@ -894,21 +895,74 @@ def main():
             Titlefontobj = pygame.font.Font(None, 64)
             if not creator_music_playing:
                 pygame.mixer.music.load("CREATOR_MUSIC.mp3")
-                pygame.mixer.music.set_volume(1)
+                pygame.mixer.music.set_volume(2.5)
                 pygame.mixer.music.play(-1)
                 creator_music_playing = True
 
-            # text box
-            x = 80
-            y = 150
-            width = 500
-            height = 250
+            font = pygame.font.Font(None, 30)
 
-            text_box = pygame.Surface((width, height))
-            text_box.fill((200, 200, 200))
-            text_box.set_alpha(220) # transparent
-            WINDOW.blit(text_box, (x, y))
+            title = "Creator: Ankitha Mukund - Independent Game Developer and Student Athlete"
+            txt = font.render(title, True, TEXT_COLOR, None)
+            x = 200 - 150 - 25
+            y = 250 - 200
+            WINDOW.blit(txt, (x, y))
 
+
+
+            # overlay
+            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+            overlay.fill((0, 0, 0))
+            overlay.set_alpha(120)
+            WINDOW.blit(overlay, (0, 0))
+
+            # panel
+            width = 600
+            height = 350
+            x = (WINDOW_WIDTH - width) // 2
+            y = (WINDOW_HEIGHT - height) // 2
+            panel = pygame.Surface((width, height), pygame.SRCALPHA)
+            panel.fill((30, 30, 35, 235))
+            WINDOW.blit(panel, (x, y))
+
+            # glow border
+            glow = 6
+            pygame.draw.rect(WINDOW, (0, 60, 120), (x - glow, y - glow, width + glow * 2, height + glow * 2), width=glow * 2, border_radius=14 + glow)
+
+            # sharp border
+            pygame.draw.rect(
+                WINDOW,
+                (70, 150, 200),
+                (x, y, width, height),
+                width=3,
+                border_radius=14
+            )
+
+            python = pygame.image.load('PYTHON.png').convert_alpha()
+            python = pygame.transform.scale(python, (250/2, 250/2))
+            x22 = 200
+            y22 = 400 - 150 + 100 - 45
+            WINDOW.blit(python, (x22, y22))
+
+            char = pygame.image.load('KNIGHT2.png').convert_alpha()
+            char = pygame.transform.scale(char, (250/2, 250/2))
+            WINDOW.blit(char, (x22+275, y22))
+
+            text = (
+                    "A big thanks to all of the playtesters who helped me refine this game.",
+                    "Throughout programming this game for over 2 years, many additions have been made,",
+                    "with Collision Detection, Physics Engine, Music, and more",
+                    "'Programming is not about typing, it's about thinking.' - Rich Hickey")
+
+            font = pygame.font.Font(None, 20)
+            line_spacing = 35
+
+            for i, line in enumerate(text):
+                rendered_line = font.render(line, True, (100, 200, 255))
+                line_x = x + (width - rendered_line.get_width()) // 2
+                line_y = y + 20 + i * line_spacing
+                WINDOW.blit(rendered_line, (line_x, line_y))
+
+            '''
             # text
             Title = Titlefontobj.render("About the Creator: Ankitha Mukund", True, TEXT_COLOR, None)
             # perfect placement and text size
@@ -955,16 +1009,18 @@ def main():
             x = WINDOW.get_width() / 2 - Title.get_width() / 2 + 80 - 75
             y = 25 + 100 + 50 + 200 - 50
             WINDOW.blit(para, (x, y))
+            
+            '''
 
             # Exit Button
-            exit_button = button(600, 500 - 75, 100, 100, 'orange', 'exit', None)
+            exit_button = button(600, 500 - 75 + 100 - 50 + 5 + 5, 100, 100, 'orange', 'exit', None)
             exit_button.render_button()
             exitfontobj = pygame.font.Font(None, 32)
 
             # Exit Button text
             ExitText = exitfontobj.render("Exit", True, TEXT_COLOR, None)
             x = 600 + 50 - 25
-            y = 500 - 75 + 50 - 25 + 15
+            y = 500 - 75 + 50 - 25 + 15 + 50 + 5 + 5
 
             WINDOW.blit(ExitText, (x, y))
 
