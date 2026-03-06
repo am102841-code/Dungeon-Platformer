@@ -58,6 +58,8 @@ clock = pygame.time.Clock()
 # Images
 background = pygame.image.load('background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
+middle_background = pygame.image.load('Dark_Dungeon_6.jpg').convert_alpha()
+middle_background = pygame.transform.scale(middle_background, (800, 600))
 platform = pygame.image.load('PLATFORM.png').convert_alpha()
 
 # Characters Images
@@ -67,26 +69,20 @@ wizard = pygame.image.load('WIZARD.png').convert_alpha()
 wizard = pygame.transform.scale(wizard, (100, 100))
 archer = pygame.image.load('KNIGHT.png').convert_alpha()
 archer = pygame.transform.scale(archer, (65, 65))
-start_img = pygame.image.load('start_button.png').convert_alpha()
-start_img = pygame.transform.scale(start_img, (160, 120))
 
 # center stores the (x, y) coordinates
-start_rect = start_img.get_rect(center=(WINDOW_WIDTH // 2 - 60 - 15 - 20- 10, WINDOW_HEIGHT // 2 + 75 - 40 + 20))
-creator_img = pygame.image.load('creator_button.png').convert_alpha()
-creator_img = pygame.transform.scale(creator_img, (152*1.5, 152*1.5+20))
-creator_rect = creator_img.get_rect(center=(WINDOW_WIDTH // 2 - 60 - 15 + 100 + 75+50-15-10 - 10, WINDOW_HEIGHT // 2 + 75 + 6.5- 40 + 20 + 75-50+40-15-4.5))
 
 # music
-pygame.mixer.music.load("music0.mp3")
+pygame.mixer.music.load("music0.ogg")
 pygame.mixer.music.set_volume(1)
 pygame.mixer.music.play(-1)
 
 # sounds [add sounds: jumping, landing on obstacle, hitting spike]
-coin_sound = pygame.mixer.Sound("collected_coin.wav")
-portal_sound = pygame.mixer.Sound("portal.wav")
-damage_sound = pygame.mixer.Sound("damage.wav")
-jumping_sound = pygame.mixer.Sound("jumping.wav")
-selected_sound = pygame.mixer.Sound("select.wav")
+coin_sound = pygame.mixer.Sound("collected_coin.ogg")
+portal_sound = pygame.mixer.Sound("portal.ogg")
+damage_sound = pygame.mixer.Sound("damage.ogg")
+jumping_sound = pygame.mixer.Sound("jumping.ogg")
+selected_sound = pygame.mixer.Sound("select.ogg")
 
 # setting up player animations to loop forever in game menu
 
@@ -167,14 +163,59 @@ class Spike():
 
 # Enemy Class (fix and use later)
 class Enemy():
-    def __init__(self):
-        self.x = 200
-        self.y = 200
-        self.move_speed = 4
-        self.on_ground = False
-        self.health = 5
-        self.player_rect = pygame.Rect(self.x, self.y, 65 / 2, 65 / 2)
-        self.facing_left = True
+    def __init__(self, x, y, width, height, platform_rect):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.platform = platform_rect
+        self.move_speed = 2
+        self.direction = 1
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.mode = "patrol"
+
+    def patrol(self):
+        self.x += self.move_speed  * self.direction # if self.direction is negative then the enemy will move to the left side, positive for the right side
+
+        # Left boundary
+        if self.x <= self.platform.left:
+            self.direction = 1 # move to the right side
+
+        # Right boundary
+        if self.x + self.width >= self.platform.right:
+            self.direction = -1
+
+    def chase(self):
+        if player.x > self.x: # if player is past the enemy
+            self.direction = 1 # move --> way
+
+        else:
+            self.direction = -1 # move <-- way
+
+        self.x += self.move_speed * 1.5 * self.direction
+
+    def check_player(self, player):
+        if (player.rect.bottom == self.platform.top and self.platform.left <= player.rect.centerx <= self.platform.right):
+            self.mode = "chase"
+
+        else:
+            self.mode = "patrol"
+
+
+    def update(self, player):
+        self.check_player(player)
+
+        if self.mode == "patrol":
+            self.patrol()
+        elif self.mode == "chase":
+            self.chase(player)
+
+        self.rect.topleft = (self.x, self.y)
+
+    def draw(self):
+        pygame.draw.rect(WINDOW, (150, 0, 0), self.rect)
+
+
 
 # Level Counter Class
 class level_counter():
@@ -350,7 +391,6 @@ def main():
         #pulse_value = abs(pygame.frame.get_ticks() % 600 - 300) / 300
 
     ### Obstacle Setup ###
-    enemy = Enemy()
     obstacle_list = []
     spikes = []
     # level 1 obstacles
@@ -894,7 +934,7 @@ def main():
 
             Titlefontobj = pygame.font.Font(None, 64)
             if not creator_music_playing:
-                pygame.mixer.music.load("CREATOR_MUSIC.mp3")
+                pygame.mixer.music.load("CREATOR_MUSIC.ogg")
                 pygame.mixer.music.set_volume(2.5)
                 pygame.mixer.music.play(-1)
                 creator_music_playing = True
@@ -1050,6 +1090,10 @@ def main():
             # Get inputs
             keys = pygame.key.get_pressed()
 
+            # Drawing backgrounds
+            #WINDOW.blit(background, (0, 0))
+            WINDOW.blit(middle_background, (0, 0))
+
             # Movement
             player.vel_x = 0
 
@@ -1118,7 +1162,7 @@ def main():
             if level == 2 and level_changing:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("music2.mp3")
+                pygame.mixer.music.load("music2.ogg")
                 pygame.mixer.music.play(-1) # -1 makes it loop forever
                 if player.player_reset == True:
                     player.x = 100
@@ -1130,6 +1174,10 @@ def main():
                 ob3 = pygame.Rect(450-200, 450, 175, 40)
                 ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50 - 250, 650 / 2 - 70 - 25, 50, 40)  # secret level block
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
+
+                # enemies
+                #enemies = []
+                #enemies.append(ob2.x + 20, ob2.y - 5, 40, 40, ob2)
 
                 # coins
                 coin1 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
@@ -1147,7 +1195,7 @@ def main():
                 coin_list = [coin1, coin2, coin3]
 
 
-                pygame.draw.rect(WINDOW, (255, 0, 0), enemy.player_rect)
+                #pygame.draw.rect(WINDOW, (255, 0, 0), enemy.player_rect)
             if level == 2 and not level_changing:
                 if player.hitbox.colliderect(ob5):
                     player.player_reset = True
@@ -1208,7 +1256,7 @@ def main():
             if level == 3 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("music3.mp3")
+                pygame.mixer.music.load("music3.ogg")
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
@@ -1245,7 +1293,7 @@ def main():
             if level == 4 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("music4.mp3")
+                pygame.mixer.music.load("music4.ogg")
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
@@ -1284,7 +1332,7 @@ def main():
             if level == 5 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("music5.mp3")
+                pygame.mixer.music.load("music5.ogg")
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
@@ -1477,6 +1525,11 @@ def main():
 
             for coin in coin_list:
                 coin.render_coin()
+            """
+            for enemy in enemies:
+                enemy.update(player)
+                enemy.draw(WINDOW)
+            """
 
             if player.player_image:
                 keys = pygame.key.get_pressed()
