@@ -56,33 +56,32 @@ pygame.display.set_caption('Platformer')
 clock = pygame.time.Clock()
 
 # Images
-background = pygame.image.load('background.png').convert_alpha()
+background = pygame.image.load('assets/x/background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
-middle_background = pygame.image.load('Dark_Dungeon_6.jpg').convert_alpha()
+middle_background = pygame.image.load('assets/x/Dark_Dungeon_6.jpg').convert_alpha()
 middle_background = pygame.transform.scale(middle_background, (800, 600))
-platform = pygame.image.load('PLATFORM.png').convert_alpha()
+platform = pygame.image.load('assets/x/PLATFORM.png').convert_alpha()
 
-# Characters Images
-knight = pygame.image.load('KNIGHT2.png').convert_alpha()
+# Character Images
+knight = pygame.image.load('assets/x/KNIGHT2.png').convert_alpha()
 knight = pygame.transform.scale(knight, (100, 100))
-wizard = pygame.image.load('WIZARD.png').convert_alpha()
+wizard = pygame.image.load('assets/x/WIZARD.png').convert_alpha()
 wizard = pygame.transform.scale(wizard, (100, 100))
-archer = pygame.image.load('KNIGHT.png').convert_alpha()
+archer = pygame.image.load('assets/x/KNIGHT.png').convert_alpha()
 archer = pygame.transform.scale(archer, (65, 65))
-
 # center stores the (x, y) coordinates
 
 # music
-pygame.mixer.music.load("music0.ogg")
+pygame.mixer.music.load("assets/x/music0.ogg")
 pygame.mixer.music.set_volume(1)
 pygame.mixer.music.play(-1)
 
 # sounds [add sounds: jumping, landing on obstacle, hitting spike]
-coin_sound = pygame.mixer.Sound("collected_coin.ogg")
-portal_sound = pygame.mixer.Sound("portal.ogg")
-damage_sound = pygame.mixer.Sound("damage.ogg")
-jumping_sound = pygame.mixer.Sound("jumping.ogg")
-selected_sound = pygame.mixer.Sound("select.ogg")
+coin_sound = pygame.mixer.Sound("assets/x/collected_coin.ogg")
+portal_sound = pygame.mixer.Sound("assets/x/portal.ogg")
+damage_sound = pygame.mixer.Sound("assets/x/damage.ogg")
+jumping_sound = pygame.mixer.Sound("assets/x/jumping.ogg")
+selected_sound = pygame.mixer.Sound("assets/x/select.ogg")
 
 # setting up player animations to loop forever in game menu
 
@@ -90,26 +89,27 @@ GROUND_Y = WINDOW_HEIGHT - knight.get_height()
 menu_x = -64
 menu_y = GROUND_Y
 
-menu_x_speed = 2*3 # sets the speed fo the character
+menu_x_speed = 2 * 3  # sets the speed fo the character
 menu_y_speed = 0
 
 menu_on_ground = True
 menu_jump_timer = 0
 
-
 tutorial_initialized = False
 
-    # Classes
+
+# Classes
 
 class ColoredPlatform:
     def __init__(self, rect, color):
         self.rect = rect
-        self.color = color   #(red, green, blue)
+        self.color = color  # (red, green, blue)
         self.image = pygame.Surface((rect.width, rect.height))
         self.image.fill(color)
 
     def draw(self, surface, image):
         pass
+
 
 # Player Class
 class Player():
@@ -117,7 +117,7 @@ class Player():
         self.player_now = None
         self.x = 250
         self.y = 450
-        self.player_image = pygame.image.load('KNIGHT2.png').convert_alpha()
+        self.player_image = pygame.image.load('assets/x/KNIGHT2.png').convert_alpha()
         self.player_image = pygame.transform.scale(self.player_image, (65, 65))
         self.player_flipped_image = pygame.transform.flip(self.player_image, True, False)
         self.vel_y = 0
@@ -139,6 +139,7 @@ class Player():
         self.height = 50
         # add collision, gravity, and other code to the player class
 
+
 # Spike Class
 class Spike():
     def __init__(self, x, y):
@@ -146,7 +147,7 @@ class Spike():
         self.y = y
         self.width = 50
         self.height = 50
-        self.image = pygame.image.load("SPIKE.png").convert_alpha()
+        self.image = pygame.image.load("assets/x/SPIKE.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
 
@@ -160,6 +161,7 @@ class Spike():
             player.x = 100
             player.y = 500
             player.hitbox.topleft = (player.x, player.y)
+
 
 # Enemy Class (fix and use later)
 class Enemy():
@@ -175,32 +177,32 @@ class Enemy():
         self.mode = "patrol"
 
     def patrol(self):
-        self.x += self.move_speed  * self.direction # if self.direction is negative then the enemy will move to the left side, positive for the right side
+        self.x += self.move_speed * self.direction  # if self.direction is negative then the enemy will move to the left side, positive for the right side
 
         # Left boundary
         if self.x <= self.platform.left:
-            self.direction = 1 # move to the right side
+            self.direction = 1  # move to the right side
 
         # Right boundary
         if self.x + self.width >= self.platform.right:
             self.direction = -1
 
     def chase(self):
-        if player.x > self.x: # if player is past the enemy
-            self.direction = 1 # move --> way
+        if player.x > self.x:  # if player is past the enemy
+            self.direction = 1  # move --> way
 
         else:
-            self.direction = -1 # move <-- way
+            self.direction = -1  # move <-- way
 
         self.x += self.move_speed * 1.5 * self.direction
 
     def check_player(self, player):
-        if (player.rect.bottom == self.platform.top and self.platform.left <= player.rect.centerx <= self.platform.right):
+        if (
+                player.rect.bottom == self.platform.top and self.platform.left <= player.rect.centerx <= self.platform.right):
             self.mode = "chase"
 
         else:
             self.mode = "patrol"
-
 
     def update(self, player):
         self.check_player(player)
@@ -216,7 +218,6 @@ class Enemy():
         pygame.draw.rect(WINDOW, (150, 0, 0), self.rect)
 
 
-
 # Level Counter Class
 class level_counter():
     def __init__(self, number):
@@ -229,6 +230,7 @@ class level_counter():
 
     def set_number(self, newNumber):
         self.number = newNumber
+
 
 # Score Counter Class
 class score_counter():
@@ -283,7 +285,6 @@ class coin_animation():
         return self.frames[self.frame_index]
 
 
-
 # Score counter
 # When player collides --> coin dissapears and score goes up by 1
 
@@ -298,6 +299,7 @@ class TitleAnimation():
         self.starting_color = starting_color
         self.speed = speed
         self.reverse = False
+
 
 # Coin Class
 class Coin():
@@ -315,7 +317,8 @@ class Coin():
     def render_coin(self):
         if not self.collected:
             # Draw a simple yellow circle
-            pygame.draw.circle(WINDOW, (255, 215, 0), (int(self.x + self.width / 2 ), int(self.y + self.height / 2)), self.width // 2)
+            pygame.draw.circle(WINDOW, (255, 215, 0), (int(self.x + self.width / 2), int(self.y + self.height / 2)),
+                               self.width // 2)
 
     def collide(self, playerHitbox):
         global points
@@ -328,6 +331,7 @@ class Coin():
         self.x += random.randint(-30, 30)
         self.y += random.randint(-30, 30)
         self.hitbox.topleft = (self.x, self.y)
+
 
 # Button Class
 class button():
@@ -344,6 +348,7 @@ class button():
     def render_button(self):
         pygame.draw.rect(WINDOW, self.color, self.hitbox, 0, 5)
 
+
 # Horizontal Collisions
 def horizontal_collision(player, Obstacle_list):
     for x in Obstacle_list:
@@ -355,6 +360,7 @@ def horizontal_collision(player, Obstacle_list):
 
 
 exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
+
 
 # The main function that controls the game
 def main():
@@ -386,36 +392,36 @@ def main():
         player.player_flipped_image = pygame.transform.flip(knight, True, False)
 
     # calculate pulse value (abs = absolute value)
-    #pulse_value = 0
-    #if level == 5:
-        #pulse_value = abs(pygame.frame.get_ticks() % 600 - 300) / 300
+    # pulse_value = 0
+    # if level == 5:
+    # pulse_value = abs(pygame.frame.get_ticks() % 600 - 300) / 300
 
     ### Obstacle Setup ###
     obstacle_list = []
     spikes = []
     # level 1 obstacles
     obstacle_list.clear()
-    ob1 = pygame.Rect(290-60, 395 + 15, 150, 40)
+    ob1 = pygame.Rect(290 - 60, 395 + 15, 150, 40)
     ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
     obstacle_list = [ob1, ground]
 
-
     ### Portal ###
 
-    portal = pygame.image.load('image (4).png').convert_alpha()
+    portal = pygame.image.load('assets/x/image (4).png').convert_alpha()
     portal = pygame.transform.scale(portal, (125, 125))
     portal_hitbox = pygame.Rect(680 + 10, 100 - 50, 125 - 80, 125)
     # portal.rect = portal.image.get_rect()
 
-    portal_surface = pygame.image.load('image (2).png').convert_alpha()
+    portal_surface = pygame.image.load('assets/x/image (2).png').convert_alpha()
     portal_surface = pygame.transform.scale(portal_surface, (125, 125))
 
     coin_list = []
 
-    coin1 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
-    coin1.randomize_pos()
+    coin1 = Coin(ob1.left + ob1.width / 2 - 20 - 15, ob1.top - 25 - 15)
     coin_list.append(coin1)
 
+    coin2 = Coin(ob1.left + ob1.width / 2 + 15, ob1.top - 25 - 15)
+    coin_list.append(coin2)
 
     # spike = pygame.image.load('SPIKE.png').convert_alpha()
     # spike = pygame.transform.scale(spike, (50,50))
@@ -427,8 +433,6 @@ def main():
     # The main game loop
     game_state = 'gameMenu'
 
-
-
     while looping:
 
         if game_state == 'gameMenu':
@@ -438,7 +442,7 @@ def main():
 
             mouse_pos = pygame.mouse.get_pos()
 
-            background_img = pygame.image.load('DUNGEON.jpg').convert_alpha()
+            background_img = pygame.image.load('assets/x/DUNGEON.jpg').convert_alpha()
             background_img = pygame.transform.scale(background_img, (800, 600))
             WINDOW.blit(background_img, (0, 0))
 
@@ -579,9 +583,8 @@ def main():
             if menu_x > WINDOW_WIDTH:
                 menu_x = -64
 
-
             menu_jump_timer += 1
-            if menu_jump_timer > 120/2 and menu_on_ground:  # 120 frames = 2 seconds [this value sets how much the character jumps when going across the screen
+            if menu_jump_timer > 120 / 2 and menu_on_ground:  # 120 frames = 2 seconds [this value sets how much the character jumps when going across the screen
                 menu_y_speed = -15  # jump
                 menu_on_ground = False
                 if not jumping_sound.get_num_channels():
@@ -606,16 +609,16 @@ def main():
             WINDOW.fill('lightgrey')
 
             # text
-            my_font = pygame.font.Font('FONT.ttf', 24)
-            #font2 = pygame.font.Font(None, 75)
+            my_font = pygame.font.Font('assets/x/FONT.ttf', 24)
+            # font2 = pygame.font.Font(None, 75)
             text = my_font.render("Click to choose your character", True, (0, 0, 0), None)
             x = 125 - 75 - 20 - 7.5
             y = 40 + 20 + 25
             WINDOW.blit(text, (x, y))
 
             # knight image
-            knight2 = pygame.transform.scale(knight, (240-30-20, 240-30-20))
-            WINDOW.blit(knight2, (125-50-25+50-10+20-5, 200-20-25+40))
+            knight2 = pygame.transform.scale(knight, (240 - 30 - 20, 240 - 30 - 20))
+            WINDOW.blit(knight2, (125 - 50 - 25 + 50 - 10 + 20 - 5, 200 - 20 - 25 + 40))
 
             # knight text
             font3 = pygame.font.Font(None, 32)
@@ -627,9 +630,9 @@ def main():
             hitbox.topleft = (125, 200)
 
             # wizard image
-            wizard_image = pygame.image.load("WIZARD.png").convert_alpha()
+            wizard_image = pygame.image.load("assets/x/WIZARD.png").convert_alpha()
             wizard_image = pygame.transform.scale(wizard_image, (200, 200))
-            WINDOW.blit(wizard_image, (265-25, 200))
+            WINDOW.blit(wizard_image, (265 - 25, 200))
 
             # wizard text
             text = font3.render("Wizard", True, (0, 0, 0), None)
@@ -640,33 +643,32 @@ def main():
             hitbox2.topleft = (225, 200)
 
             # archer image
-            archer_image = pygame.image.load("KNIGHT.png").convert_alpha()
+            archer_image = pygame.image.load("assets/x/KNIGHT.png").convert_alpha()
             archer_image = pygame.transform.scale(archer_image, (120, 120))
-            WINDOW.blit(archer_image, (265-25+15+250-100+30-10, 200))
+            WINDOW.blit(archer_image, (265 - 25 + 15 + 250 - 100 + 30 - 10, 200))
 
             # archer text
             archer_text = font3.render("Archer", True, (0, 0, 0), None)
-            WINDOW.blit(archer_text, (130 + 15 + 125 + 20 + 125+30-10, 335))
+            WINDOW.blit(archer_text, (130 + 15 + 125 + 20 + 125 + 30 - 10, 335))
 
             # make hitbox3
             hitbox3 = archer_image.get_rect()
             hitbox3.topleft = (130 + 15 + 125 + 20 + 125, 335)
 
-
             # rectangle borders
-            border = pygame.Rect(130-25, 200, 170-25, 170)
+            border = pygame.Rect(130 - 25, 200, 170 - 25, 170)
             pygame.draw.rect(WINDOW, (0, 0, 0), border, width=5)
 
-            border2 = pygame.Rect(130-25 + 150, 200, 170-25, 170)
+            border2 = pygame.Rect(130 - 25 + 150, 200, 170 - 25, 170)
             pygame.draw.rect(WINDOW, (0, 0, 0), border2, width=5)
 
-            border3 = pygame.Rect(130-25 + 150+175-20-3.5, 200, 170-25, 170)
+            border3 = pygame.Rect(130 - 25 + 150 + 175 - 20 - 3.5, 200, 170 - 25, 170)
             pygame.draw.rect(WINDOW, (0, 0, 0), border3, width=5)
 
             # elf image
-            #elf = pygame.image.load("ELF.png").convert_alpha()
-            #elf = pygame.transform.scale(elf, (100, 100))
-            #WINDOW.blit(elf, (445, 200))
+            # elf = pygame.image.load("ELF.png").convert_alpha()
+            # elf = pygame.transform.scale(elf, (100, 100))
+            # WINDOW.blit(elf, (445, 200))
 
             # Exit Button
             exit_button = button(600, 500 - 75, 100, 100, 'orange', 'exit', None)
@@ -679,7 +681,6 @@ def main():
             y = 500 - 75 + 50 - 25 + 15
 
             WINDOW.blit(ExitText, (x, y))
-
 
             mouseClicked = False
 
@@ -705,7 +706,7 @@ def main():
                 player.player_flipped_image = pygame.transform.flip(knight, True, False)
                 show_message = True
                 text = "Knight was selected!"
-                #WINDOW.blit(k, (kx, ky)) # make the text stay for longer
+                # WINDOW.blit(k, (kx, ky)) # make the text stay for longer
 
             # if wizard is clicked
             if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
@@ -716,7 +717,7 @@ def main():
                 player.player_flipped_image = pygame.transform.flip(wizard, True, False)
                 show_message2 = True
                 text2 = "Wizard was selected!"
-                #WINDOW.blit(w, (wx, wy))
+                # WINDOW.blit(w, (wx, wy))
 
             if hitbox3.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 selected_character = "archer"
@@ -731,26 +732,27 @@ def main():
             # Show Knight text
             if show_message == True:
                 if time.time() - start_time < 1:
-                    WINDOW.blit(exitfontobj.render("Knight was selected!", True, (0, 0, 0)), (450+75, 200-50))
+                    WINDOW.blit(exitfontobj.render("Knight was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
                 else:
                     show_message = False
 
             # Show Wizard text
             if show_message2 == True:
                 if time.time() - start_time2 < 1:
-                    WINDOW.blit(exitfontobj.render("Wizard was selected!", True, (0, 0, 0)), (450+75, 200-50))
+                    WINDOW.blit(exitfontobj.render("Wizard was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
                 else:
                     show_message2 = False
 
             if show_message3 == True:
                 if time.time() - start_time3 < 1:
-                    WINDOW.blit(exitfontobj.render("Archer was selected!", True, (0, 0, 0)), (450+75, 200-50))
+                    WINDOW.blit(exitfontobj.render("Archer was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
                 else:
                     show_message3 = False
 
         elif game_state == 'tutorial_level':
             # Exit Button
-            exit_button = button(exit_button_rect.x, exit_button_rect.y, exit_button_rect.width, exit_button_rect.height, 'orange', 'exit', None)
+            exit_button = button(exit_button_rect.x, exit_button_rect.y, exit_button_rect.width,
+                                 exit_button_rect.height, 'orange', 'exit', None)
             exitfontobj = pygame.font.Font(None, 32)
 
             # Exit Button text
@@ -769,12 +771,10 @@ def main():
                         game_state = 'gameMenu'
                         level = 1
 
-
             WINDOW.fill('lightblue')
 
             font2 = pygame.font.SysFont(None, 36)
             text_surface = font2.render("Use the arrow or letter keys to move and jump!", True, (155, 155, 155))
-
 
             if tutorial_initialized == False:
                 player.x = 100
@@ -786,14 +786,11 @@ def main():
 
                 ob1 = pygame.Rect(375 - 150, WINDOW_HEIGHT - 200 + 75, 200, 40)
                 ob2 = pygame.Rect(ob1.x + ob1.width + 50, ob1.y - 75, 250, 40)
-                spikes.append(Spike(ob2.x+60, ob2.y-60+15))
+                spikes.append(Spike(ob2.x + 60, ob2.y - 60 + 15))
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
                 obstacle_list = [ob1, ob2, ground]
 
-
                 tutorial_initialized = True
-
-
 
             # --- Input ---
             keys = pygame.key.get_pressed()
@@ -809,7 +806,7 @@ def main():
             if (keys[pygame.K_UP] or keys[pygame.K_SPACE]) and player.on_ground:
                 jumping_sound.play()
                 player.vel_y = player.jump_strength
-                #coin_sound.play()
+                # coin_sound.play()
                 player.on_ground = False
 
             # --- Horizontal movement and collision ---
@@ -839,9 +836,8 @@ def main():
 
             player.hitbox.topleft = (player.x, player.y)
 
-
             WINDOW.blit(background, (0, 0))
-            WINDOW.blit(text_surface, (200-75, 150))
+            WINDOW.blit(text_surface, (200 - 75, 150))
             exit_button.render_button()
             WINDOW.blit(ExitText, (x, y))
             if selected_character is not None:
@@ -861,8 +857,7 @@ def main():
                 player.x = WINDOW_WIDTH - player.hitbox.width
                 player.hitbox.right = WINDOW_WIDTH
 
-
-            #WINDOW.blit(Spike.image, Spike.hitbox.topleft)
+            # WINDOW.blit(Spike.image, Spike.hitbox.topleft)
 
         elif game_state == 'tutorial':
             WINDOW.fill('lightblue')
@@ -934,7 +929,7 @@ def main():
 
             Titlefontobj = pygame.font.Font(None, 64)
             if not creator_music_playing:
-                pygame.mixer.music.load("CREATOR_MUSIC.ogg")
+                pygame.mixer.music.load("assets/x/CREATOR_MUSIC.ogg")
                 pygame.mixer.music.set_volume(2.5)
                 pygame.mixer.music.play(-1)
                 creator_music_playing = True
@@ -946,8 +941,6 @@ def main():
             x = 200 - 150 - 25
             y = 250 - 200
             WINDOW.blit(txt, (x, y))
-
-
 
             # overlay
             overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -966,7 +959,8 @@ def main():
 
             # glow border
             glow = 6
-            pygame.draw.rect(WINDOW, (0, 60, 120), (x - glow, y - glow, width + glow * 2, height + glow * 2), width=glow * 2, border_radius=14 + glow)
+            pygame.draw.rect(WINDOW, (0, 60, 120), (x - glow, y - glow, width + glow * 2, height + glow * 2),
+                             width=glow * 2, border_radius=14 + glow)
 
             # sharp border
             pygame.draw.rect(
@@ -977,21 +971,21 @@ def main():
                 border_radius=14
             )
 
-            python = pygame.image.load('PYTHON.png').convert_alpha()
-            python = pygame.transform.scale(python, (250/2, 250/2))
+            python = pygame.image.load('assets/x/PYTHON.png').convert_alpha()
+            python = pygame.transform.scale(python, (250 / 2, 250 / 2))
             x22 = 200
             y22 = 400 - 150 + 100 - 45
             WINDOW.blit(python, (x22, y22))
 
-            char = pygame.image.load('KNIGHT2.png').convert_alpha()
-            char = pygame.transform.scale(char, (250/2, 250/2))
-            WINDOW.blit(char, (x22+275, y22))
+            char = pygame.image.load('assets/x/KNIGHT2.png').convert_alpha()
+            char = pygame.transform.scale(char, (250 / 2, 250 / 2))
+            WINDOW.blit(char, (x22 + 275, y22))
 
             text = (
-                    "A big thanks to all of the playtesters who helped me refine this game.",
-                    "Throughout programming this game for over 2 years, many additions have been made,",
-                    "with Collision Detection, Physics Engine, Music, and more",
-                    "'Programming is not about typing, it's about thinking.' - Rich Hickey")
+                "A big thanks to all of the playtesters who helped me refine this game.",
+                "Throughout programming this game for over 2 years, many additions have been made,",
+                "with Collision Detection, Physics Engine, Music, and more",
+                "'Programming is not about typing, it's about thinking.' - Rich Hickey")
 
             font = pygame.font.Font(None, 20)
             line_spacing = 35
@@ -1049,7 +1043,7 @@ def main():
             x = WINDOW.get_width() / 2 - Title.get_width() / 2 + 80 - 75
             y = 25 + 100 + 50 + 200 - 50
             WINDOW.blit(para, (x, y))
-            
+
             '''
 
             # Exit Button
@@ -1091,7 +1085,7 @@ def main():
             keys = pygame.key.get_pressed()
 
             # Drawing backgrounds
-            #WINDOW.blit(background, (0, 0))
+            # WINDOW.blit(background, (0, 0))
             WINDOW.blit(middle_background, (0, 0))
 
             # Movement
@@ -1108,7 +1102,7 @@ def main():
             if (keys[pygame.K_UP] or keys[pygame.K_SPACE]) and player.on_ground == True:
                 jumping_sound.play()
                 player.vel_y = player.jump_strength
-                #coin_sound.play()
+                # coin_sound.play()
                 player.on_ground = False
             if keys[pygame.K_SLASH]:
                 colorImage = pygame.Surface(player.player_image.get_size()).convert_alpha()
@@ -1146,7 +1140,6 @@ def main():
                 level_changing = True
                 level_counter1.set_number(int(level))
 
-
             if level == 1 and level_changing:
                 level_changing = False
                 player.x = 100
@@ -1162,22 +1155,23 @@ def main():
             if level == 2 and level_changing:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("music2.ogg")
-                pygame.mixer.music.play(-1) # -1 makes it loop forever
+                pygame.mixer.music.load("assets/x/music2.ogg")
+                pygame.mixer.music.play(-1)  # -1 makes it loop forever
                 if player.player_reset == True:
                     player.x = 100
                     player.y = 500
                     player.player_reset = False
 
                 # obstacles
-                ob2 = pygame.Rect(565 - 200, 270+40, 200, 40)
-                ob3 = pygame.Rect(450-200, 450, 175, 40)
-                ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50 - 250, 650 / 2 - 70 - 25, 50, 40)  # secret level block
+                ob2 = pygame.Rect(565 - 200 - 75 + 200, 270 + 40 + 20, 75, 40)
+                ob3 = pygame.Rect(450 - 200, 450, 175, 40)
+                ob5 = pygame.Rect(650 / 2 - 250 - 75 + 345 + 50 - 250 + 7000, 650 / 2 - 70 - 25, 50,
+                                  40 + 7000)  # secret level block
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
 
                 # enemies
-                #enemies = []
-                #enemies.append(ob2.x + 20, ob2.y - 5, 40, 40, ob2)
+                # enemies = []
+                # enemies.append(ob2.x + 20, ob2.y - 5, 40, 40, ob2)
 
                 # coins
                 coin1 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
@@ -1194,8 +1188,7 @@ def main():
                 obstacle_list = [ob2, ob3, ground]
                 coin_list = [coin1, coin2, coin3]
 
-
-                #pygame.draw.rect(WINDOW, (255, 0, 0), enemy.player_rect)
+                # pygame.draw.rect(WINDOW, (255, 0, 0), enemy.player_rect)
             if level == 2 and not level_changing:
                 if player.hitbox.colliderect(ob5):
                     player.player_reset = True
@@ -1217,8 +1210,6 @@ def main():
 
                 portal_x, portal_y = 300, 100
                 portal_hitbox.topleft = (portal_x, portal_y)
-
-
 
                 '''
                 # obstacles
@@ -1248,7 +1239,6 @@ def main():
                     pygame.draw.rect(WINDOW, (128, 128, 128), rect)
                 '''
 
-
             if level == "secret" and not level_changing:
                 horizontal_collision(player, obstacle_list)
 
@@ -1256,7 +1246,7 @@ def main():
             if level == 3 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("music3.ogg")
+                pygame.mixer.music.load("assets/x/music3.ogg")
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
@@ -1269,16 +1259,23 @@ def main():
                     player.player_reset = False
 
                 # ob1 = pygame.Rect(x, y, width, height)
-                ob1 = pygame.Rect(375, 600-100-200+100+50, 175, 40)
-                ob2 = pygame.Rect(250-75, 600-120-250+100+50-85, 175, 40)  # make grey
-                ob4 = pygame.Rect(ob2.x-200+400+50, ob2.y-125, 100, 40)
+                ob1 = pygame.Rect(375 + 7000, 600 - 100 - 200 + 100 + 50, 175, 40)
+                ob2 = pygame.Rect(250 + 7000, 600 - 120 - 250 + 100 + 50 - 85, 175, 40)  # make grey
+                ob4 = pygame.Rect(ob2.x - 200 + 400 + 50 + 7000, ob2.y - 125, 100, 40)
+
+                # only visible obstacle
+                ob5 = pygame.Rect(250, 400 + 20, 200 + 50 + 75, 40)
+
                 spikes.clear()
-                #spikes.append(Spike(550+75, 150+25-50))
+                x = int(ob5.y + ob5.width / 2 - 100)
+                y = int(ob5.y - ob5.height)
+                spikes.append(Spike(x - 200 + 75 - 15 - 35, y))  # spike1
+                spikes.append(Spike(x + 50 - 75, y))  # spike2
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
                 # lists
                 coin_list = []
-                obstacle_list = [ob1, ob2, ob4, ground]
+                obstacle_list = [ob1, ob2, ob4, ob5, ground]
 
                 # coins
                 coin3 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
@@ -1293,7 +1290,7 @@ def main():
             if level == 4 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("music4.ogg")
+                pygame.mixer.music.load("assets/x/music4.ogg")
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
@@ -1305,19 +1302,21 @@ def main():
                     player.y = 500
                     player.player_reset = False
 
-                ob1 = pygame.Rect(200, 350, 100, 50)
-                ob2 = pygame.Rect(475, 350, 100, 50)
-                ob3 = pygame.Rect(375, 545 - 50, 50, 50)  # fill with grey
-                # ob4 = pygame.Rect(375, 350, 50, 50) # fill with grey
-                ob5 = pygame.Rect(475 + 45 + 75 + 25, 200 + 12 + 10, 50, 50)  # fill with grey
-                ob6 = pygame.Rect(ob5.x - 25 - 75 - 25 - 15, ob5.y - 35 - 50, 50, 50)  # fill with grey
+                # platforms
+                ob1 = pygame.Rect(200, 475 - 25, 100 + 80, 40)  # spike on top
+                ob3 = pygame.Rect(ob1.x + 75 + 200, ob1.y - 75 - 25, 50, 40)  # fill with grey
+                ob4 = pygame.Rect(ob3.x + 75 + 150 - 100, ob3.y - 75 - 50, 180, 40)  # spike on top
+
+                # spikes
                 spikes.clear()
-                #spikes.append(Spike(ob5.x + 20, ob5.y - ob5.height))
+                spikes.append(Spike(ob1.x + ob1.width // 2, ob1.y - ob1.height))
+                spikes.append(Spike(ob4.x + ob4.width // 2, ob4.y - ob4.height))
+
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
                 # lists
                 coin_list = []
-                obstacle_list = [ob1, ob2, ob3, ob5, ob6, ground]
+                obstacle_list = [ob1, ob3, ob4, ground]
 
                 # coins
                 coin3 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
@@ -1332,7 +1331,7 @@ def main():
             if level == 5 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("music5.ogg")
+                pygame.mixer.music.load("assets/x/music5.ogg")
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
@@ -1345,11 +1344,11 @@ def main():
                     player.player_reset = False
 
                 # obstacles
-                ob1 = pygame.Rect(200-80, 425, 200, 50)
-                ob2 = pygame.Rect(250 + 25, 225 + 50 + 30, 50, 50) # filled with grey
-                ob3 = pygame.Rect(ob2.x + 40 + 75-50, ob2.y - 75 + 35, 200, 50) # add coin on top
-                ob4 = pygame.Rect(ob3.x + 100 + 50, ob3.y - 75, 50, 50) # filled with grey
-                ob5 = pygame.Rect(ob4.x + 75 + 75, ob4.y, 50, 50) # filled with grey
+                ob1 = pygame.Rect(200 - 80, 425, 200, 50)
+                ob2 = pygame.Rect(250 + 25, 225 + 50 + 30, 50, 50)  # filled with grey
+                ob3 = pygame.Rect(ob2.x + 40 + 75 - 50, ob2.y - 75 + 35, 200, 50)  # add coin on top
+                ob4 = pygame.Rect(ob3.x + 100 + 50, ob3.y - 75, 50, 50)  # filled with grey
+                ob5 = pygame.Rect(ob4.x + 75 + 75, ob4.y, 50, 50)  # filled with grey
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
                 # lists
@@ -1359,16 +1358,12 @@ def main():
                 # spikes
                 spikes.clear()
                 spikes.append(Spike(ob3.x + 20 + 30, ob3.y - ob3.height))
-                spikes.append(Spike(800-175, 100))
+                spikes.append(Spike(800 - 175, 100))
 
                 # coins
                 coin4 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
                 coin4.randomize_pos()
                 coin_list.append(coin4)
-
-                coin5 = Coin(ob3.left + ob3.width / 2 - 20, ob3.top - 25 - 15)
-                coin5.randomize_pos()
-                coin_list.append(coin5)
 
             # level 6
             if level == 6 and level_changing == True:
@@ -1384,7 +1379,7 @@ def main():
                     player.player_reset = False
 
                 ob1 = pygame.Rect(150, 500 - 50, 150, 50)
-                ob2 = pygame.Rect(ob1.x + 100 + 75, ob1.y - 50 - 50, 60, 50) # fill with grey
+                ob2 = pygame.Rect(ob1.x + 100 + 75, ob1.y - 50 - 50, 60, 50)  # fill with grey
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
                 obstacle_list = [ob1, ob2, ground]
@@ -1459,7 +1454,7 @@ def main():
                         platform_img.fill((128, 128, 128))
 
                 if level == 4:
-                    if rect == ob3 or rect == ob4 or rect == ob5 or rect == ob6:
+                    if rect == ob3:
                         platform_img.fill((128, 128, 128))
 
                 if level == 5:
@@ -1476,7 +1471,7 @@ def main():
                 portal_x = 680 - 100
                 portal_y = 100
                 portal_hitbox.topleft = (portal_x, portal_y)
-                #pygame.draw.rect(WINDOW, (0, 0, 0), ob5)
+                # pygame.draw.rect(WINDOW, (0, 0, 0), ob5)
                 platform_img = pygame.transform.scale(platform_img, (ob5.width, ob5.height))
                 platform_img.fill((128, 128, 128))
                 WINDOW.blit(platform_img, (ob5.x, ob5.y))
@@ -1487,10 +1482,9 @@ def main():
                 portal_hitbox.topleft = (portal_x, portal_y)
                 pygame.draw.rect(WINDOW, (0, 0, 0), portal_hitbox)
 
-
             if level == 3:
                 portal_x = WINDOW_WIDTH - 75 - 20 - 150
-                portal_y = 50
+                portal_y = 150
                 portal_hitbox.topleft = (portal_x, portal_y)
                 for spike in spikes:
                     WINDOW.blit(spike.image, (spike.x, spike.y))
@@ -1500,8 +1494,8 @@ def main():
                     spike.collisions(player)
 
             if level == 4:
-                portal_x = WINDOW_WIDTH - 75 - 20 - 400
-                portal_y = 50 - 25 - 10
+                portal_x = WINDOW_WIDTH - 75 - 20 - 400 + 200 + 200
+                portal_y = 150 - 75
                 portal_hitbox.topleft = (portal_x, portal_y)
                 for spike in spikes:
                     WINDOW.blit(spike.image, (spike.x, spike.y))
@@ -1513,9 +1507,9 @@ def main():
                 portal_x = WINDOW_WIDTH - 95
                 portal_y = 50
                 portal_hitbox.topleft = (portal_x, portal_y)
-                #pulse_surface = pygame.Surface((40, WINDOW_HEIGHT), pygame.SRCALPHA)
-                #pulse_surface.fill((100, 100, 225, int(80 + pulse_value * 120)))
-                #WINDOW.blit(pulse_surface, (WINDOW_WIDTH - 40, 0))
+                # pulse_surface = pygame.Surface((40, WINDOW_HEIGHT), pygame.SRCALPHA)
+                # pulse_surface.fill((100, 100, 225, int(80 + pulse_value * 120)))
+                # WINDOW.blit(pulse_surface, (WINDOW_WIDTH - 40, 0))
                 for spike in spikes:
                     WINDOW.blit(spike.image, (spike.x, spike.y))
 
@@ -1546,7 +1540,6 @@ def main():
                 if selected_character is not None:
                     WINDOW.blit(player.player_now, (player.x, player.y))
 
-
             if player.health <= 0:
                 game_state = "Died_screen"
                 if game_state == "Died_screen":
@@ -1564,7 +1557,7 @@ def main():
                 portal_hitbox.topleft = (portal_x, portal_y)
 
             # WINDOW.fill(PLAYER_COLOR, player)
-            #WINDOW.blit(player.player_now, (player.x, player.y))
+            # WINDOW.blit(player.player_now, (player.x, player.y))
             WINDOW.blit(portal, (portal_x, portal_y))
             WINDOW.blit(level_counter1.text(), (170, 100))
             WINDOW.blit(coin_counter.text(), (300, 100))
