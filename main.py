@@ -7,6 +7,9 @@ pygame.mixer.init()
 ### Priorities/ Improvements ###
 # store points as a variable so the points does nto reset to 0 after each level ends
 # add more sound effects (done 12/29 and 1/1/25)
+# Platforms image does not look very good
+# add a shop where coins can be used to buy different skins for the player
+# refine collisions
 
 # Initialize Variables
 points = 0
@@ -436,6 +439,11 @@ def main():
     while looping:
 
         if game_state == 'gameMenu':
+            if not pygame.mixer.music.get_busy():
+                pygame.mixer.music.load("assets/x/music0.ogg")
+                pygame.mixer.music.set_volume(1)
+                pygame.mixer.music.play(-1)
+
             mouseClicked = False
             knight_selected = True
             wizard_selected = False
@@ -542,6 +550,14 @@ def main():
                         else:
                             level = 1
                             level_counter1.set_number(1)
+
+                            # rebuild level 1
+                            ob1 = pygame.Rect(290, 395 + 15, 100, 50)
+                            ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
+
+                            obstacle_list = [ob1, ground]
+                            spikes.clear()
+
                             player.health = player.max_health
                             player.x = 100
                             player.y = 500
@@ -771,6 +787,11 @@ def main():
                         game_state = 'gameMenu'
                         level = 1
 
+                        # reset tutorial objects
+                        obstacle_list.clear()
+                        spikes.clear()
+                        tutorial_initialized = False
+
             WINDOW.fill('lightblue')
 
             font2 = pygame.font.SysFont(None, 36)
@@ -918,7 +939,6 @@ def main():
             # Check EXIT button click
             if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 game_state = 'gameMenu'
-
 
 
         # Creator Page
@@ -1540,12 +1560,25 @@ def main():
                 if selected_character is not None:
                     WINDOW.blit(player.player_now, (player.x, player.y))
 
-            if player.health <= 0:
-                game_state = "Died_screen"
-                if game_state == "Died_screen":
-                    WINDOW.fill("lightgrey")
-                    fonts = pygame.font.Font(None, 64)
-                    fonts.render("Game Over!", True, (0, 0, 0), None)
+            if player.health <= 0 and game_state != "game_over":
+                death_time = pygame.time.get_ticks()
+                game_state = "game_over"
+                if game_state == "game_over":
+                    WINDOW.fill('red')
+
+                    font = pygame.font.Font(None, 64)
+                    text = font.render("The dungeon claims another soul...", True, TEXT_COLOR, None)
+                    text2 = font.render("Your journey ends here.", True, TEXT_COLOR, None)
+
+                    current_time = pygame.time.get_ticks()
+                    elapsed_time = current_time - death_time
+
+                    if elapsed_time > 1000:
+                        WINDOW.blit(text, (250, 250))
+
+                    if elapsed_time > 3000:
+                        WINDOW.blit(text2, (300, 320))
+
                 game_state = 'gameMenu'
                 level = 1
                 player.health = player.max_health
