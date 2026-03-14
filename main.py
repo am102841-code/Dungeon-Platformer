@@ -20,6 +20,11 @@ showMessage2 = False
 startTime2 = 0
 points_added = False
 pulse_side = "right"
+player_dead = False
+death_time = 0
+pulse = 0
+pulse_direction = 1
+death_particles = []
 
 # Knight
 show_message = False
@@ -1559,26 +1564,23 @@ def main():
 
                 if selected_character is not None:
                     WINDOW.blit(player.player_now, (player.x, player.y))
-
-            if player.health <= 0 and game_state != "game_over":
+            global player_dead
+            if player.health <= 0 and not player_dead:
+                player_dead = True
                 death_time = pygame.time.get_ticks()
                 game_state = "game_over"
-                if game_state == "game_over":
-                    WINDOW.fill('red')
 
-                    font = pygame.font.Font(None, 64)
-                    text = font.render("The dungeon claims another soul...", True, TEXT_COLOR, None)
-                    text2 = font.render("Your journey ends here.", True, TEXT_COLOR, None)
+                for i in range(20):
+                    particle = {
+                        "x": player.x + 50,
+                        "y": player.y + 50,
+                        "vx": random.randint(-5, 5),
+                        "vy": random.randint(-5, 5),
+                        "life": 30
+                    }
+                    death_particles.append(particle)
 
-                    current_time = pygame.time.get_ticks()
-                    elapsed_time = current_time - death_time
-
-                    if elapsed_time > 1000:
-                        WINDOW.blit(text, (250, 250))
-
-                    if elapsed_time > 3000:
-                        WINDOW.blit(text2, (300, 320))
-
+                ''' 
                 game_state = 'gameMenu'
                 level = 1
                 player.health = player.max_health
@@ -1588,6 +1590,7 @@ def main():
                 portal_x = 380
                 portal_y = 200
                 portal_hitbox.topleft = (portal_x, portal_y)
+                '''
 
             # WINDOW.fill(PLAYER_COLOR, player)
             # WINDOW.blit(player.player_now, (player.x, player.y))
@@ -1595,6 +1598,50 @@ def main():
             WINDOW.blit(level_counter1.text(), (170, 100))
             WINDOW.blit(coin_counter.text(), (300, 100))
             # WINDOW.blit(portal_surface, (680, 100-50))
+
+        elif game_state == "game_over":
+            global pulse, pulse_direction
+            # pulse
+            pulse += pulse_direction
+
+            if pulse > 120:
+                pulse_direction = -1
+            if pulse < 40:
+                pulse_direction = 1
+
+            WINDOW.fill((pulse, 0, 0))
+
+            fallen_player = pygame.transform.rotate(knight, 90)
+            fallen_player.set_alpha(150)
+            WINDOW.blit(fallen_player, (WINDOW_WIDTH//2 - 50, 350))
+
+            font = pygame.font.Font(None, 50)
+            text = font.render("The dungeon claims another soul...", True, (200, 200, 200))
+            text2 = font.render("Your journey ends here.", True, (200, 200, 200))
+            text3 = font.render("Press R to restart", True, (200, 200, 200))
+
+            current_time = pygame.time.get_ticks()
+            elapsed_time = current_time - death_time
+
+            if elapsed_time > 1000:
+                WINDOW.blit(text, (180 - 100, 250))
+
+            if elapsed_time > 3000:
+                WINDOW.blit(text2, (230 - 100, 320))
+
+            if elapsed_time > 5000:
+                WINDOW.blit(text3, (260 - 100, 400))
+
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        player_dead = False
+                        level = 1
+                        player.health = player.max_health
+                        player.x = 100
+                        player.y = 500
+
+                        game_state = "gameMenu"
         pygame.display.update()
         fpsClock.tick(FPS)
 
