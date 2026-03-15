@@ -1570,13 +1570,14 @@ def main():
                 death_time = pygame.time.get_ticks()
                 game_state = "game_over"
 
+                # vx and vy variables change the speed of the particles
                 for i in range(20):
                     particle = {
-                        "x": player.x + 50,
-                        "y": player.y + 50,
-                        "vx": random.randint(-5, 5),
-                        "vy": random.randint(-5, 5),
-                        "life": 30
+                        "x": WINDOW_WIDTH // 2,
+                        "y": WINDOW_HEIGHT // 2,
+                        "vx": random.randint(-4, 4),
+                        "vy": random.randint(-4, 4),
+                        "life": 180
                     }
                     death_particles.append(particle)
 
@@ -1611,6 +1612,16 @@ def main():
 
             WINDOW.fill((pulse, 0, 0))
 
+            # death particles
+            for particle in death_particles:
+                particle["x"] += particle["vx"]
+                particle["y"] += particle["vy"]
+                particle["life"] -= 1
+
+                pygame.draw.circle(WINDOW, (200, 0, 0), (int(particle["x"]), int(particle["y"])), 4)
+
+            death_particles[:] = [p for p in death_particles if p["life"] > 0]
+
             fallen_player = pygame.transform.rotate(knight, 90)
             fallen_player.set_alpha(150)
             WINDOW.blit(fallen_player, (WINDOW_WIDTH//2 - 50, 350))
@@ -1624,13 +1635,13 @@ def main():
             elapsed_time = current_time - death_time
 
             if elapsed_time > 1000:
-                WINDOW.blit(text, (180 - 100, 250))
+                WINDOW.blit(text, (180 - 100, 250 - 150))
 
             if elapsed_time > 3000:
-                WINDOW.blit(text2, (230 - 100, 320))
+                WINDOW.blit(text2, (230 - 100, 320 - 150))
 
             if elapsed_time > 5000:
-                WINDOW.blit(text3, (260 - 100, 400))
+                WINDOW.blit(text3, (260 - 100, 400 - 150))
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
