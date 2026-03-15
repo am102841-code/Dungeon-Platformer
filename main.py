@@ -68,7 +68,8 @@ background = pygame.image.load('assets/x/background.png').convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
 middle_background = pygame.image.load('assets/x/Dark_Dungeon_6.jpg').convert_alpha()
 middle_background = pygame.transform.scale(middle_background, (800, 600))
-platform = pygame.image.load('assets/x/PLATFORM.png').convert_alpha()
+platform = pygame.image.load('assets/x/platform.png').convert_alpha()
+platform = pygame.transform.scale(platform, (200, 60))
 
 # Character Images
 knight = pygame.image.load('assets/x/KNIGHT2.png').convert_alpha()
@@ -157,7 +158,7 @@ class Spike():
         self.height = 50
         self.image = pygame.image.load("assets/x/SPIKE.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
-        self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.hitbox = pygame.Rect(self.x + 10, self.y + 10, self.width - 20, self.height - 10)
 
     def update(self):
         self.hitbox.topleft = (self.x, self.y)
@@ -1473,6 +1474,9 @@ def main():
             for rect in obstacle_list:
                 # pygame.draw.rect(WINDOW, OBSTACLE_COLOR, x)
                 platform_img = pygame.transform.scale(platform, (rect.width, rect.height))
+
+                if rect == ground:
+                    pygame.draw.rect(WINDOW, (80, 80, 80), rect)
 
                 if level == 3:
                     if rect == ob2:
