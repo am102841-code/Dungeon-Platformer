@@ -1,4 +1,4 @@
-import pygame, sys, random, time
+import pygame, sys, random, time, math
 from pygame.locals import *
 
 pygame.init()
@@ -12,6 +12,7 @@ pygame.mixer.init()
 # refine collisions
 
 # Initialize Variables
+portal = None 
 points = 0
 selected_character = None
 showMessage = False
@@ -25,6 +26,10 @@ death_time = 0
 pulse = 0
 pulse_direction = 1
 death_particles = []
+glow_size = 100
+glow_surface = pygame.Surface((glow_size, glow_size), pygame.SRCALPHA)
+glow_counter = 0
+glow_speed = 0.05
 
 # Knight
 show_message = False
@@ -142,7 +147,7 @@ class Player():
         self.hitbox = self.player_image.get_rect()
         self.player_color = (245, 0, 0)
         self.facing_left = True
-        self.health = 10
+        self.health = 1
         self.max_health = 10
         self.width = 50
         self.height = 50
@@ -341,6 +346,38 @@ class Coin():
         self.y += random.randint(-30, 30)
         self.hitbox.topleft = (self.x, self.y)
 
+# Portal Class
+class Portal():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.width = 125
+        self.height = 125
+        self.image = pygame.image.load('portal.png')
+        self.hitbox = pygame.Rect(self.x + 25, self.y + 20, 75, 85)
+        self.hitbox = pygame.transform.scale(self.hitbox, (self.width, self.height))
+        self.float_offset = 0
+        self.base_y = self.y
+
+    def update(self, player):
+        self.hitbox.topleft = (self.x + 25, self.y + 20)
+
+        if self.hitbox.colliderect(player.hitbox) and player.vel_y > 0:
+            return True
+
+        return False
+
+    def draw(self, surface):
+        surface.blit(self.image, (self.x, self.y))
+
+    def set_position(self, x, y):
+        self.x = x
+        self.y = y
+        self.hitbox.topleft = (self.x + 25, self.y + 20)
+
+    def animate(self):
+        self.float_offset += 0.1
+        self.y = self.base_y + int(math.sin(self.float_offset) * 1)
 
 # Button Class
 class button():
@@ -404,7 +441,7 @@ def main():
     # pulse_value = 0
     # if level == 5:
     # pulse_value = abs(pygame.frame.get_ticks() % 600 - 300) / 300
-
+    global glow_counter
     ### Obstacle Setup ###
     obstacle_list = []
     spikes = []
@@ -1022,55 +1059,6 @@ def main():
                 line_y = y + 20 + i * line_spacing
                 WINDOW.blit(rendered_line, (line_x, line_y))
 
-            '''
-            # text
-            Title = Titlefontobj.render("About the Creator: Ankitha Mukund", True, TEXT_COLOR, None)
-            # perfect placement and text size
-            x = WINDOW.get_width() / 2 - Title.get_width() / 2 + 80 - 75
-            y = 25
-            WINDOW.blit(Title, (x, y))
-
-            # loading computer img
-            img = pygame.image.load("computah.jpeg").convert_alpha()
-            img = pygame.transform.scale(img, (200, 200))
-            WINDOW.blit(img, (550 + 50, 100))
-
-            para_text = "Hi, I am the creator of this platformer, Ankitha."
-            font = pygame.font.Font(None, 32)
-            para = font.render(para_text, True, TEXT_COLOR, None)
-            x = WINDOW.get_width() / 2 - Title.get_width() / 2 + 80 - 75
-            y = 25 + 100
-            WINDOW.blit(para, (x, y))
-
-            para_text = "First off, I would like to thank my playtester, Architha."
-            font = pygame.font.Font(None, 32)
-            para = font.render(para_text, True, TEXT_COLOR, None)
-            x = WINDOW.get_width() / 2 - Title.get_width() / 2 + 80 - 75
-            y = 25 + 100 + 50
-            WINDOW.blit(para, (x, y))
-
-            para_text = "I have worked on this game for about 1.5 years."
-            font = pygame.font.Font(None, 32)
-            para = font.render(para_text, True, TEXT_COLOR, None)
-            x = WINDOW.get_width() / 2 - Title.get_width() / 2 + 80 - 75
-            y = 25 + 100 + 50 + 50
-            WINDOW.blit(para, (x, y))
-
-            para_text = "Over time, I have made many additions, and some"
-            font = pygame.font.Font(None, 32)
-            para = font.render(para_text, True, TEXT_COLOR, None)
-            x = WINDOW.get_width() / 2 - Title.get_width() / 2 + 80 - 75
-            y = 25 + 100 + 50 + 50 + 50
-            WINDOW.blit(para, (x, y))
-
-            para_text = "include gravity, collisions, classes, and a score counter."
-            font = pygame.font.Font(None, 32)
-            para = font.render(para_text, True, TEXT_COLOR, None)
-            x = WINDOW.get_width() / 2 - Title.get_width() / 2 + 80 - 75
-            y = 25 + 100 + 50 + 200 - 50
-            WINDOW.blit(para, (x, y))
-
-            '''
 
             # Exit Button
             exit_button = button(600, 500 - 75 + 100 - 50 + 5 + 5, 100, 100, 'orange', 'exit', None)
