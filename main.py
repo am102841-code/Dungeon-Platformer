@@ -63,6 +63,10 @@ WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 level = 1
 
+# overlay for all levels
+overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+overlay.set_alpha(50)
+
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Platformer')
 
@@ -238,8 +242,8 @@ class level_counter():
         self.number = number
 
     def text(self):
-        fontObj = pygame.font.Font(None, 32)
-        textSufaceObj = fontObj.render("Level " + str(self.number), True, TEXT_COLOR, None)
+        fontObj = pygame.font.Font('assets/x/FONT.ttf', int(32/2))
+        textSufaceObj = fontObj.render("Level: " + str(self.number), True, TEXT_COLOR, None)
         return textSufaceObj
 
     def set_number(self, newNumber):
@@ -252,7 +256,7 @@ class score_counter():
         pass
 
     def text(self, coin_list=None):
-        fontObj = pygame.font.Font(None, 32)
+        fontObj = pygame.font.Font('assets/x/FONT.ttf', int(32/2))
         textSufaceObj = fontObj.render("Points: " + str(points), True, TEXT_COLOR, None)
         return textSufaceObj
 
@@ -368,6 +372,7 @@ class Portal():
         return False
 
     def draw(self, surface):
+        #pygame.draw.circle(surface, (100, 100, 255, 50), (self.x+60, self.y+60), 70)
         surface.blit(self.image, (self.x, self.y))
         # debugging line to see the outline of the hitbox
         #pygame.draw.rect(surface, (255, 0, 0), self.hitbox, 2)
@@ -424,7 +429,7 @@ def main():
     global show_message
     global points, points_added
     global menu_jump_timer, menu_on_ground, menu_x_speed, menu_y_speed, menu_y, menu_x
-    global jumping_sound
+    global jumping_sound, overlay
 
     player = Player()
 
@@ -1144,6 +1149,18 @@ def main():
                 player.x = 100
                 player.y = 500
 
+                # Step 2: set overlay color per level
+                level_colors = {
+                    1: (255, 255, 255),  # normal
+                    2: (0, 0, 255),  # faint blue
+                    3: (255, 0, 0),  # faint red
+                    4: (0, 255, 0),  # faint green
+                    5: (255, 165, 0),  # orange
+                }
+
+                # update the overlay color every frame in the loop
+                overlay.fill(level_colors.get(level, (255, 255, 255)))  # default white if level > 5
+
                 # level 1 obstacles
                 obstacle_list.clear()
                 ob1 = pygame.Rect(290, 395 + 15, 100, 50)
@@ -1575,8 +1592,10 @@ def main():
             #WINDOW.blit(portal, (portal_x, portal_y))
             portal.animate()
             portal.draw(WINDOW)
-            WINDOW.blit(level_counter1.text(), (170, 100))
+            #WINDOW.blit(middle_background, (-player.x * 0.1, 0))
+            WINDOW.blit(level_counter1.text(), (170-20-15, 100))
             WINDOW.blit(coin_counter.text(), (300, 100))
+            WINDOW.blit(overlay, (0, 0))
             # WINDOW.blit(portal_surface, (680, 100-50))
 
         elif game_state == "game_over":
