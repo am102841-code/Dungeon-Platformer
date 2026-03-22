@@ -12,7 +12,7 @@ pygame.mixer.init()
 # refine collisions
 
 # Initialize Variables
-portal = None 
+portal = None
 points = 0
 selected_character = None
 showMessage = False
@@ -353,9 +353,9 @@ class Portal():
         self.y = y
         self.width = 125
         self.height = 125
-        self.image = pygame.image.load('portal.png')
-        self.hitbox = pygame.Rect(self.x + 25, self.y + 20, 75, 85)
-        self.hitbox = pygame.transform.scale(self.hitbox, (self.width, self.height))
+        self.image = pygame.image.load('assets/x/image (4).png')
+        self.image = pygame.transform.scale(self.image, (self.width, self.height))
+        self.hitbox = pygame.Rect(self.x + 25, self.y + 20, 75+25, 85)
         self.float_offset = 0
         self.base_y = self.y
 
@@ -369,6 +369,8 @@ class Portal():
 
     def draw(self, surface):
         surface.blit(self.image, (self.x, self.y))
+        # debugging line to see the outline of the hitbox
+        #pygame.draw.rect(surface, (255, 0, 0), self.hitbox, 2)
 
     def set_position(self, x, y):
         self.x = x
@@ -376,8 +378,9 @@ class Portal():
         self.hitbox.topleft = (self.x + 25, self.y + 20)
 
     def animate(self):
-        self.float_offset += 0.1
-        self.y = self.base_y + int(math.sin(self.float_offset) * 1)
+        self.float_offset += 0.08
+        self.y = self.base_y + int(math.sin(self.float_offset) * 10)
+        self.hitbox.topleft = (self.x + 10, self.y + 10)
 
 # Button Class
 class button():
@@ -452,7 +455,7 @@ def main():
     obstacle_list = [ob1, ground]
 
     ### Portal ###
-
+    '''
     portal = pygame.image.load('assets/x/image (4).png').convert_alpha()
     portal = pygame.transform.scale(portal, (125, 125))
     portal_hitbox = pygame.Rect(680 + 10, 100 - 50, 125 - 80, 125)
@@ -460,7 +463,9 @@ def main():
 
     portal_surface = pygame.image.load('assets/x/image (2).png').convert_alpha()
     portal_surface = pygame.transform.scale(portal_surface, (125, 125))
+    '''
 
+    portal = Portal(650-100-15, 150)
     coin_list = []
 
     coin1 = Coin(ob1.left + ob1.width / 2 - 20 - 15, ob1.top - 25 - 15)
@@ -1123,39 +1128,19 @@ def main():
                 colorImage.fill(player.player_color)
                 player.player_image.blit(colorImage, (player.x, player.y), special_flags=pygame.BLEND_RGBA_MULT)
 
-            if player.hitbox.colliderect(portal_hitbox) and level == 1:
+            # portal collisions to go to the next level
+            touched_portal = portal.update(player)
+
+            if touched_portal and not level_changing:
                 portal_sound.play()
                 player.player_reset = True
-                level = 2
+                level += 1
                 level_changing = True
-                level_counter1.set_number(int(level))
-            elif player.hitbox.colliderect(portal_hitbox) and (level == 2 or level == 'secret'):
-                portal_sound.play()
-                player.player_reset = True
-                level = 3
-                level_changing = True
-                level_counter1.set_number(int(level))
-            elif player.hitbox.colliderect(portal_hitbox) and level == 3:
-                portal_sound.play()
-                player.player_reset = True
-                level = 4
-                level_changing = True
-                level_counter1.set_number(int(level))
-            elif player.hitbox.colliderect(portal_hitbox) and level == 4:
-                portal_sound.play()
-                player.player_reset = True
-                level = 5
-                level_changing = True
-                level_counter1.set_number(int(level))
-            elif player.hitbox.colliderect(portal_hitbox) and level == 5:
-                portal_sound.play()
-                player.player_reset = True
-                level = 6
-                level_changing = True
-                level_counter1.set_number(int(level))
+                level_counter1.set_number(level)
 
             if level == 1 and level_changing:
                 level_changing = False
+                portal.set_position(650-100-7.5, 150-25)
                 player.x = 100
                 player.y = 500
 
@@ -1223,7 +1208,7 @@ def main():
                     player.player_reset = False
 
                 portal_x, portal_y = 300, 100
-                portal_hitbox.topleft = (portal_x, portal_y)
+                #portal_hitbox.topleft = (portal_x, portal_y)
 
                 '''
                 # obstacles
@@ -1306,7 +1291,7 @@ def main():
                 pygame.mixer.music.stop()
                 pygame.mixer.music.load("assets/x/music4.ogg")
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
-
+                portal = Portal(650 - 100 + 125 + 10, 150 - 75 - 25 - 25)
                 # setting screen and background sizes less from the secret level
                 WINDOW = pygame.display.set_mode((800, 600))
                 background = pygame.transform.scale(background, (800, 600))
@@ -1347,7 +1332,7 @@ def main():
                 pygame.mixer.music.stop()
                 pygame.mixer.music.load("assets/x/music5.ogg")
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
-
+                portal = Portal(650 - 100 + 125, 150 - 75 - 20-10)
                 # setting screen and background sizes less from the secret level
                 WINDOW = pygame.display.set_mode((800, 600))
                 background = pygame.transform.scale(background, (800, 600))
@@ -1448,7 +1433,7 @@ def main():
             # Render elements of the game
             portal_x = 680 - 300
             portal_y = 100 + 100
-            portal_hitbox.topleft = (portal_x, portal_y)
+            #portal_hitbox.topleft = (portal_x, portal_y)
 
             # if 640 <  player
 
@@ -1487,7 +1472,7 @@ def main():
             if level == 2:
                 portal_x = 680 - 100
                 portal_y = 100
-                portal_hitbox.topleft = (portal_x, portal_y)
+                #portal_hitbox.topleft = (portal_x, portal_y)
                 # pygame.draw.rect(WINDOW, (0, 0, 0), ob5)
                 platform_img = pygame.transform.scale(platform_img, (ob5.width, ob5.height))
                 platform_img.fill((128, 128, 128))
@@ -1496,13 +1481,13 @@ def main():
             if level == 'secret':
                 portal_x = 680 + 250
                 portal_y = 100 - 23.5
-                portal_hitbox.topleft = (portal_x, portal_y)
-                pygame.draw.rect(WINDOW, (0, 0, 0), portal_hitbox)
+                #portal_hitbox.topleft = (portal_x, portal_y)
+                #pygame.draw.rect(WINDOW, (0, 0, 0), portal_hitbox)
 
             if level == 3:
                 portal_x = WINDOW_WIDTH - 75 - 20 - 150
                 portal_y = 150
-                portal_hitbox.topleft = (portal_x, portal_y)
+                #portal_hitbox.topleft = (portal_x, portal_y)
                 for spike in spikes:
                     WINDOW.blit(spike.image, (spike.x, spike.y))
 
@@ -1513,7 +1498,7 @@ def main():
             if level == 4:
                 portal_x = WINDOW_WIDTH - 75 - 20 - 400 + 200 + 200
                 portal_y = 150 - 75
-                portal_hitbox.topleft = (portal_x, portal_y)
+                #portal_hitbox.topleft = (portal_x, portal_y)
                 for spike in spikes:
                     WINDOW.blit(spike.image, (spike.x, spike.y))
 
@@ -1523,7 +1508,7 @@ def main():
             if level == 5:
                 portal_x = WINDOW_WIDTH - 95
                 portal_y = 50
-                portal_hitbox.topleft = (portal_x, portal_y)
+                #portal_hitbox.topleft = (portal_x, portal_y)
                 # pulse_surface = pygame.Surface((40, WINDOW_HEIGHT), pygame.SRCALPHA)
                 # pulse_surface.fill((100, 100, 225, int(80 + pulse_value * 120)))
                 # WINDOW.blit(pulse_surface, (WINDOW_WIDTH - 40, 0))
@@ -1587,7 +1572,9 @@ def main():
 
             # WINDOW.fill(PLAYER_COLOR, player)
             # WINDOW.blit(player.player_now, (player.x, player.y))
-            WINDOW.blit(portal, (portal_x, portal_y))
+            #WINDOW.blit(portal, (portal_x, portal_y))
+            portal.animate()
+            portal.draw(WINDOW)
             WINDOW.blit(level_counter1.text(), (170, 100))
             WINDOW.blit(coin_counter.text(), (300, 100))
             # WINDOW.blit(portal_surface, (680, 100-50))
