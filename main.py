@@ -1,15 +1,16 @@
-import pygame, sys, random, time, math
+import pygame, sys, random, time, math, os
 from pygame.locals import *
 
 pygame.init()
 pygame.mixer.init()
 
-### Priorities/ Improvements ###
-# store points as a variable so the points does nto reset to 0 after each level ends
-# add more sound effects (done 12/29 and 1/1/25)
-# Platforms image does not look very good
-# add a shop where coins can be used to buy different skins for the player
-# refine collisions
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 # Initialize Variables
 portal = None
@@ -30,6 +31,22 @@ glow_size = 100
 glow_surface = pygame.Surface((glow_size, glow_size), pygame.SRCALPHA)
 glow_counter = 0
 glow_speed = 0.05
+damage_flash_time = 0
+damage_flash_duration = 150
+
+# Cutscene Variables
+cutscene_phase = 0  # 0 = story text, 1 = character walk, 2 = press space
+cutscene_start_time = 0
+cutscene_text_index = 0
+cutscene_char_index = 0
+darkness_alpha = 0
+cutscene_complete = False
+
+cutscene_texts = [
+    "You awaken in the darkness...",
+    "A dungeon surrounds you...",
+    "Your only escape is forward."
+]
 
 # Knight
 show_message = False
@@ -73,33 +90,33 @@ pygame.display.set_caption('Platformer')
 clock = pygame.time.Clock()
 
 # Images
-background = pygame.image.load('assets/x/background.png').convert_alpha()
+background = pygame.image.load(resource_path('assets/x/background.png')).convert_alpha()
 background = pygame.transform.scale(background, (800, 600))
-middle_background = pygame.image.load('assets/x/Dark_Dungeon_6.jpg').convert_alpha()
+middle_background = pygame.image.load(resource_path('assets/x/Dark_Dungeon_6.jpg')).convert_alpha()
 middle_background = pygame.transform.scale(middle_background, (800, 600))
-platform = pygame.image.load('assets/x/platform.png').convert_alpha()
+platform = pygame.image.load(resource_path('assets/x/platform.png')).convert_alpha()
 platform = pygame.transform.scale(platform, (200, 60))
 
 # Character Images
-knight = pygame.image.load('assets/x/KNIGHT2.png').convert_alpha()
+knight = pygame.image.load(resource_path('assets/x/KNIGHT2.png')).convert_alpha()
 knight = pygame.transform.scale(knight, (100, 100))
-wizard = pygame.image.load('assets/x/WIZARD.png').convert_alpha()
+wizard = pygame.image.load(resource_path('assets/x/WIZARD.png')).convert_alpha()
 wizard = pygame.transform.scale(wizard, (100, 100))
-archer = pygame.image.load('assets/x/KNIGHT.png').convert_alpha()
+archer = pygame.image.load(resource_path('assets/x/KNIGHT.png')).convert_alpha()
 archer = pygame.transform.scale(archer, (65, 65))
 # center stores the (x, y) coordinates
 
 # music
-pygame.mixer.music.load("assets/x/music0.ogg")
+pygame.mixer.music.load(resource_path("assets/x/music0.ogg"))
 pygame.mixer.music.set_volume(1)
 pygame.mixer.music.play(-1)
 
 # sounds [add sounds: jumping, landing on obstacle, hitting spike]
-coin_sound = pygame.mixer.Sound("assets/x/collected_coin.ogg")
-portal_sound = pygame.mixer.Sound("assets/x/portal.ogg")
-damage_sound = pygame.mixer.Sound("assets/x/damage.ogg")
-jumping_sound = pygame.mixer.Sound("assets/x/jumping.ogg")
-selected_sound = pygame.mixer.Sound("assets/x/select.ogg")
+coin_sound = pygame.mixer.Sound(resource_path("assets/x/collected_coin.ogg"))
+portal_sound = pygame.mixer.Sound(resource_path("assets/x/portal.ogg"))
+damage_sound = pygame.mixer.Sound(resource_path("assets/x/damage.ogg"))
+jumping_sound = pygame.mixer.Sound(resource_path("assets/x/jumping.ogg"))
+selected_sound = pygame.mixer.Sound(resource_path("assets/x/select.ogg"))
 
 # setting up player animations to loop forever in game menu
 
@@ -107,7 +124,7 @@ GROUND_Y = WINDOW_HEIGHT - knight.get_height()
 menu_x = -64
 menu_y = GROUND_Y
 
-menu_x_speed = 2 * 3  # sets the speed fo the character
+menu_x_speed = 2 * 3
 menu_y_speed = 0
 
 menu_on_ground = True
@@ -115,19 +132,17 @@ menu_jump_timer = 0
 
 tutorial_initialized = False
 
+# cutscene function
+def draw_cutscene_text(text, x, y, max_chars=None):
+    font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 27)
+
+    if max_chars:
+        text = text[:max_chars]
+
+    text_surface = font.render(text, True, (255, 255, 255))
+    WINDOW.blit(text_surface, (x, y))
 
 # Classes
-
-class ColoredPlatform:
-    def __init__(self, rect, color):
-        self.rect = rect
-        self.color = color  # (red, green, blue)
-        self.image = pygame.Surface((rect.width, rect.height))
-        self.image.fill(color)
-
-    def draw(self, surface, image):
-        pass
-
 
 # Player Class
 class Player():
@@ -135,7 +150,7 @@ class Player():
         self.player_now = None
         self.x = 250
         self.y = 450
-        self.player_image = pygame.image.load('assets/x/KNIGHT2.png').convert_alpha()
+        self.player_image = pygame.image.load(resource_path('assets/x/KNIGHT2.png')).convert_alpha()
         self.player_image = pygame.transform.scale(self.player_image, (65, 65))
         self.player_flipped_image = pygame.transform.flip(self.player_image, True, False)
         self.vel_y = 0
@@ -165,7 +180,7 @@ class Spike():
         self.y = y
         self.width = 50
         self.height = 50
-        self.image = pygame.image.load("assets/x/SPIKE.png").convert_alpha()
+        self.image = pygame.image.load(resource_path("assets/x/SPIKE.png")).convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
         self.hitbox = pygame.Rect(self.x + 10, self.y + 10, self.width - 20, self.height - 10)
 
@@ -174,8 +189,10 @@ class Spike():
 
     def collisions(self, player):
         if self.hitbox.colliderect(player.hitbox):
+            global damage_flash_time
             damage_sound.play()
             player.health -= 1
+            damage_flash_time = pygame.time.get_ticks()
             player.x = 100
             player.y = 500
             player.hitbox.topleft = (player.x, player.y)
@@ -242,7 +259,7 @@ class level_counter():
         self.number = number
 
     def text(self):
-        fontObj = pygame.font.Font('assets/x/FONT.ttf', int(32/2))
+        fontObj = pygame.font.Font(resource_path('assets/x/FONT.ttf'), int(32 / 2))
         textSufaceObj = fontObj.render("Level: " + str(self.number), True, TEXT_COLOR, None)
         return textSufaceObj
 
@@ -256,7 +273,7 @@ class score_counter():
         pass
 
     def text(self, coin_list=None):
-        fontObj = pygame.font.Font('assets/x/FONT.ttf', int(32/2))
+        fontObj = pygame.font.Font(resource_path('assets/x/FONT.ttf'), int(32 / 2))
         textSufaceObj = fontObj.render("Points: " + str(points), True, TEXT_COLOR, None)
         return textSufaceObj
 
@@ -306,18 +323,6 @@ class coin_animation():
 # Score counter
 # When player collides --> coin dissapears and score goes up by 1
 
-# Not Using right now --> fix
-class TitleAnimation():
-    def __init__(self, text, x, y, color, color_change, starting_color, speed, reverse):
-        self.text = 'Platformer'
-        self.x = x
-        self.y = y
-        self.color = color
-        self.color_change = color_change
-        self.starting_color = starting_color
-        self.speed = speed
-        self.reverse = False
-
 
 # Coin Class
 class Coin():
@@ -357,7 +362,7 @@ class Portal():
         self.y = y
         self.width = 125
         self.height = 125
-        self.image = pygame.image.load('assets/x/image (4).png')
+        self.image = pygame.image.load(resource_path('assets/x/image (4).png'))
         self.image = pygame.transform.scale(self.image, (self.width, self.height))
         self.hitbox = pygame.Rect(self.x + 25, self.y + 20, 75+25, 85)
         self.float_offset = 0
@@ -398,10 +403,10 @@ class button():
         self.text = text
         self.state = 'Normal'
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.scale = 1
 
     def render_button(self):
         pygame.draw.rect(WINDOW, self.color, self.hitbox, 0, 5)
-
 
 # Horizontal Collisions
 def horizontal_collision(player, Obstacle_list):
@@ -421,7 +426,7 @@ def main():
     looping = True
 
     global level, show_message2, selected_character, show_message3, showMessage, startTime, showMessage2, startTime2
-    global WINDOW
+    global WINDOW, damage_flash_time
     global background
     global secret_obstacle_list
     global tutorial_initialized
@@ -460,16 +465,6 @@ def main():
     obstacle_list = [ob1, ground]
 
     ### Portal ###
-    '''
-    portal = pygame.image.load('assets/x/image (4).png').convert_alpha()
-    portal = pygame.transform.scale(portal, (125, 125))
-    portal_hitbox = pygame.Rect(680 + 10, 100 - 50, 125 - 80, 125)
-    # portal.rect = portal.image.get_rect()
-
-    portal_surface = pygame.image.load('assets/x/image (2).png').convert_alpha()
-    portal_surface = pygame.transform.scale(portal_surface, (125, 125))
-    '''
-
     portal = Portal(650-100-15, 150)
     coin_list = []
 
@@ -493,7 +488,7 @@ def main():
 
         if game_state == 'gameMenu':
             if not pygame.mixer.music.get_busy():
-                pygame.mixer.music.load("assets/x/music0.ogg")
+                pygame.mixer.music.load(resource_path("assets/x/music0.ogg"))
                 pygame.mixer.music.set_volume(1)
                 pygame.mixer.music.play(-1)
 
@@ -503,7 +498,7 @@ def main():
 
             mouse_pos = pygame.mouse.get_pos()
 
-            background_img = pygame.image.load('assets/x/DUNGEON.jpg').convert_alpha()
+            background_img = pygame.image.load(resource_path('assets/x/DUNGEON.jpg')).convert_alpha()
             background_img = pygame.transform.scale(background_img, (800, 600))
             WINDOW.blit(background_img, (0, 0))
 
@@ -601,6 +596,7 @@ def main():
                             showMessage = True
                             startTime = pygame.time.get_ticks()
                         else:
+                            game_state = "cutscene"
                             level = 1
                             level_counter1.set_number(1)
 
@@ -615,7 +611,7 @@ def main():
                             player.x = 100
                             player.y = 500
                             tutorial_initialized = False
-                            game_state = 'gameplay'
+                            #game_state = 'gameplay'
                     elif button2.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'creator'
                     elif tb.hitbox.collidepoint(mouse_x, mouse_y):
@@ -678,7 +674,7 @@ def main():
             WINDOW.fill('lightgrey')
 
             # text
-            my_font = pygame.font.Font('assets/x/FONT.ttf', 24)
+            my_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 24)
             # font2 = pygame.font.Font(None, 75)
             text = my_font.render("Click to choose your character", True, (0, 0, 0), None)
             x = 125 - 75 - 20 - 7.5
@@ -699,7 +695,7 @@ def main():
             hitbox.topleft = (125, 200)
 
             # wizard image
-            wizard_image = pygame.image.load("assets/x/WIZARD.png").convert_alpha()
+            wizard_image = pygame.image.load(resource_path("assets/x/WIZARD.png")).convert_alpha()
             wizard_image = pygame.transform.scale(wizard_image, (200, 200))
             WINDOW.blit(wizard_image, (265 - 25, 200))
 
@@ -712,7 +708,7 @@ def main():
             hitbox2.topleft = (225, 200)
 
             # archer image
-            archer_image = pygame.image.load("assets/x/KNIGHT.png").convert_alpha()
+            archer_image = pygame.image.load(resource_path("assets/x/KNIGHT.png")).convert_alpha()
             archer_image = pygame.transform.scale(archer_image, (120, 120))
             WINDOW.blit(archer_image, (265 - 25 + 15 + 250 - 100 + 30 - 10, 200))
 
@@ -817,6 +813,7 @@ def main():
                     WINDOW.blit(exitfontobj.render("Archer was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
                 else:
                     show_message3 = False
+
 
         elif game_state == 'tutorial_level':
             # Exit Button
@@ -1002,7 +999,7 @@ def main():
 
             Titlefontobj = pygame.font.Font(None, 64)
             if not creator_music_playing:
-                pygame.mixer.music.load("assets/x/CREATOR_MUSIC.ogg")
+                pygame.mixer.music.load(resource_path("assets/x/CREATOR_MUSIC.ogg"))
                 pygame.mixer.music.set_volume(2.5)
                 pygame.mixer.music.play(-1)
                 creator_music_playing = True
@@ -1044,13 +1041,13 @@ def main():
                 border_radius=14
             )
 
-            python = pygame.image.load('assets/x/PYTHON.png').convert_alpha()
+            python = pygame.image.load(resource_path('assets/x/PYTHON.png')).convert_alpha()
             python = pygame.transform.scale(python, (250 / 2, 250 / 2))
             x22 = 200
             y22 = 400 - 150 + 100 - 45
             WINDOW.blit(python, (x22, y22))
 
-            char = pygame.image.load('assets/x/KNIGHT2.png').convert_alpha()
+            char = pygame.image.load(resource_path('assets/x/KNIGHT2.png')).convert_alpha()
             char = pygame.transform.scale(char, (250 / 2, 250 / 2))
             WINDOW.blit(char, (x22 + 275, y22))
 
@@ -1099,6 +1096,141 @@ def main():
                 game_state = 'gameMenu'
                 creator_music_playing = False
 
+        elif game_state == 'cutscene':
+            global cutscene_phase, cutscene_start_time, cutscene_text_index, cutscene_char_index, darkness_alpha, damage_flash_time
+
+            WINDOW.blit(background, (0, 0))
+
+            # ===== PHASE 1: Story Text =====
+            if cutscene_phase == 0:
+                if cutscene_start_time == 0:
+                    cutscene_start_time = pygame.time.get_ticks()
+
+                elapsed = pygame.time.get_ticks() - cutscene_start_time
+
+                # Show first text line (0-3 seconds)
+                if elapsed < 3000:
+                    cutscene_char_index = int((elapsed / 3000) * len(cutscene_texts[0]))
+                    draw_cutscene_text(cutscene_texts[0][:cutscene_char_index], 20, 200)
+
+                # Show second text line (3-6 seconds)
+                elif elapsed < 6000:
+                    draw_cutscene_text(cutscene_texts[0], 20, 200)
+                    cutscene_char_index = int(((elapsed - 3000) / 3000) * len(cutscene_texts[1]))
+                    draw_cutscene_text(cutscene_texts[1][:cutscene_char_index], 50, 280)
+                # Show third text line (6-9 seconds)
+                elif elapsed < 9000:
+                    draw_cutscene_text(cutscene_texts[0], 20, 200)
+                    draw_cutscene_text(cutscene_texts[1], 20, 280)
+                    cutscene_char_index = int(((elapsed - 6000) / 3000) * len(cutscene_texts[2]))
+                    draw_cutscene_text(cutscene_texts[2][:cutscene_char_index], 50, 360)
+
+                # All text shown, wait 1 second then move to phase 2
+                if elapsed > 10000:
+                    cutscene_phase = 1
+                    cutscene_start_time = pygame.time.get_ticks()
+                    darkness_alpha = 0
+                else:
+                    # Allow SPACE to skip early
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_SPACE]:
+                        cutscene_phase = 1
+                        cutscene_start_time = pygame.time.get_ticks()
+                        darkness_alpha = 0
+
+            # ===== PHASE 2: Character Walks Across Screen =====
+            elif cutscene_phase == 1:
+                if cutscene_start_time == 0:
+                    cutscene_start_time = pygame.time.get_ticks()
+
+                elapsed = pygame.time.get_ticks() - cutscene_start_time
+                walk_duration = 9000  # 9 seconds
+
+                # Character position (left to right)
+                progress = elapsed / walk_duration  # 0.0 to 1.0
+                char_x = -100 + (progress * (WINDOW_WIDTH + 200))  # -100 to 900
+
+                # Darkness increases as character walks
+                darkness_alpha = int(200 * progress)  # 0 to 200
+
+                # Draw character
+                if selected_character == "wizard":
+                    wizard_flipped = pygame.transform.flip(wizard, True, False)
+                    WINDOW.blit(wizard_flipped, (char_x, 250))
+                elif selected_character == "archer":
+                    archer_flipped = pygame.transform.flip(archer, True, False)
+                    WINDOW.blit(archer_flipped, (char_x, 250))
+                else:  # knight
+                    knight_flipped = pygame.transform.flip(knight, True, False)
+                    WINDOW.blit(knight_flipped, (char_x, 250))
+
+                # Draw darkness overlay
+                darkness_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+                darkness_surface.fill((0, 0, 0))
+                darkness_surface.set_alpha(darkness_alpha)
+                WINDOW.blit(darkness_surface, (0, 0))
+
+                # Move to phase 3 when walk is done
+                if elapsed > walk_duration:
+                    cutscene_phase = 2
+                    cutscene_start_time = 0
+                    darkness_alpha = 200
+
+            # ===== PHASE 3: Press SPACE to Continue =====
+            elif cutscene_phase == 2:
+                # Black screen
+                WINDOW.fill((0, 0, 0))
+
+                # Text
+                font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 20)
+                text_surface = font.render("Press SPACE to begin your journey...", True, (255, 255, 255))
+                x = WINDOW_WIDTH // 2 - text_surface.get_width() // 2
+                y = WINDOW_HEIGHT // 2
+                WINDOW.blit(text_surface, (x, y))
+
+                # Wait for SPACE
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_SPACE]:
+                    # Reset to Level 1
+                    level = 1
+                    level_counter1.set_number(1)
+
+                    # Reset player
+                    player.health = player.max_health
+                    player.x = 100
+                    player.y = 500
+                    player.vel_x = 0
+                    player.vel_y = 0
+
+                    # Reset obstacles
+                    ob1 = pygame.Rect(290, 395 + 15, 100, 50)
+                    ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
+                    obstacle_list = [ob1, ground]
+                    spikes.clear()
+                    coin_list = []
+
+                    # Add coins to level 1
+                    coin1 = Coin(ob1.left + ob1.width / 2 - 20 - 15, ob1.top - 25 - 15)
+                    coin_list.append(coin1)
+                    coin2 = Coin(ob1.left + ob1.width / 2 + 15, ob1.top - 25 - 15)
+                    coin_list.append(coin2)
+
+                    # Reset portal
+                    portal.set_position(650 - 100 - 7.5, 150 - 25)
+                    damage_flash_time = 0
+
+                    # Start gameplay
+                    game_state = 'gameplay'
+
+                    # Reset cutscene variables for next time
+                    cutscene_phase = 0
+                    cutscene_start_time = 0
+
+            # Handle quit event
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
 
         elif game_state == 'gameplay':
             # for testing
@@ -1133,6 +1265,7 @@ def main():
                 colorImage.fill(player.player_color)
                 player.player_image.blit(colorImage, (player.x, player.y), special_flags=pygame.BLEND_RGBA_MULT)
 
+
             # portal collisions to go to the next level
             touched_portal = portal.update(player)
 
@@ -1145,6 +1278,7 @@ def main():
 
             if level == 1 and level_changing:
                 level_changing = False
+                damage_flash_time = 0  # Reset flash timer
                 portal.set_position(650-100-7.5, 150-25)
                 player.x = 100
                 player.y = 500
@@ -1171,7 +1305,7 @@ def main():
             if level == 2 and level_changing:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("assets/x/music2.ogg")
+                pygame.mixer.music.load(resource_path("assets/x/music2.ogg"))
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
                 if player.player_reset == True:
                     player.x = 100
@@ -1262,7 +1396,7 @@ def main():
             if level == 3 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("assets/x/music3.ogg")
+                pygame.mixer.music.load(resource_path("assets/x/music3.ogg"))
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
@@ -1306,7 +1440,7 @@ def main():
             if level == 4 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("assets/x/music4.ogg")
+                pygame.mixer.music.load(resource_path("assets/x/music4.ogg"))
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
                 portal = Portal(650 - 100 + 125 + 10, 150 - 75 - 25 - 25)
                 # setting screen and background sizes less from the secret level
@@ -1347,7 +1481,7 @@ def main():
             if level == 5 and level_changing == True:
                 level_changing = False
                 pygame.mixer.music.stop()
-                pygame.mixer.music.load("assets/x/music5.ogg")
+                pygame.mixer.music.load(resource_path("assets/x/music5.ogg"))
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
                 portal = Portal(650 - 100 + 125, 150 - 75 - 20-10)
                 # setting screen and background sizes less from the secret level
@@ -1446,6 +1580,7 @@ def main():
             if player.hitbox.right > WINDOW_WIDTH:
                 player.x = WINDOW_WIDTH - player.hitbox.width
                 player.hitbox.right = WINDOW_WIDTH
+
 
             # Render elements of the game
             portal_x = 680 - 300
@@ -1595,8 +1730,14 @@ def main():
             #WINDOW.blit(middle_background, (-player.x * 0.1, 0))
             WINDOW.blit(level_counter1.text(), (170-20-15, 100))
             WINDOW.blit(coin_counter.text(), (300, 100))
-            WINDOW.blit(overlay, (0, 0))
-            # WINDOW.blit(portal_surface, (680, 100-50))
+            # Screen flash effect when taking damage
+            if pygame.time.get_ticks() - damage_flash_time < damage_flash_duration:
+                flash_intensity = 255 * (1 - (pygame.time.get_ticks() - damage_flash_time) / damage_flash_duration)
+                flash_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+                flash_surface.fill((255, 100, 100))  # Light red color
+                flash_surface.set_alpha(int(flash_intensity / 3))  # Make it semi-transparent
+                WINDOW.blit(flash_surface, (0, 0))
+
 
         elif game_state == "game_over":
             global pulse, pulse_direction
@@ -1651,6 +1792,9 @@ def main():
                         player.y = 500
 
                         game_state = "gameMenu"
+
+
+
         pygame.display.update()
         fpsClock.tick(FPS)
 
