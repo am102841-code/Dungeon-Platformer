@@ -33,6 +33,7 @@ glow_counter = 0
 glow_speed = 0.05
 damage_flash_time = 0
 damage_flash_duration = 150
+torch_list = []
 
 # Cutscene Variables
 cutscene_phase = 0  # 0 = story text, 1 = character walk, 2 = press space
@@ -253,6 +254,30 @@ class Enemy():
         pygame.draw.rect(WINDOW, (150, 0, 0), self.rect)
 
 
+class Torch():
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.width = 50
+        self.height = 50
+
+        self.image = pygame.image.load(resource_path("assets/x/TORCH.png")).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (self.width, self.height))
+
+        self.current_alpha = 255
+        self.min_alpha = 100
+        self.max_alpha = 255
+
+    def update(self):
+        """Flicker randomly"""
+        self.current_alpha = random.randint(self.min_alpha, self.max_alpha)
+
+    def draw(self, surface):
+        """Draw torch with flicker"""
+        torch_copy = self.image.copy()
+        torch_copy.set_alpha(int(self.current_alpha))
+        surface.blit(torch_copy, (self.x, self.y))
+
 # Level Counter Class
 class level_counter():
     def __init__(self, number):
@@ -427,7 +452,7 @@ def main():
 
     global level, show_message2, selected_character, show_message3, showMessage, startTime, showMessage2, startTime2
     global WINDOW, damage_flash_time
-    global background
+    global background, torch_list
     global secret_obstacle_list
     global tutorial_initialized
     global spikes
@@ -1144,7 +1169,7 @@ def main():
                     cutscene_start_time = pygame.time.get_ticks()
 
                 elapsed = pygame.time.get_ticks() - cutscene_start_time
-                walk_duration = 9000  # 9 seconds
+                walk_duration = 4350  # milliseconds 
 
                 # Character position (left to right)
                 progress = elapsed / walk_duration  # 0.0 to 1.0
@@ -1297,7 +1322,7 @@ def main():
 
                 # level 1 obstacles
                 obstacle_list.clear()
-                ob1 = pygame.Rect(290, 395 + 15, 100, 50)
+                ob1 = pygame.Rect(290, 395 + 15+10, 100, 50)
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
                 obstacle_list = [ob1, ground]
 
@@ -1333,6 +1358,9 @@ def main():
 
                 coin3 = Coin(ob3.left + ob3.width / 2 - 50, ob3.top - 25 - 15)
                 coin_list.append(coin3)
+
+                # torches
+                torch_list = [Torch(500, 200+300-125)]
 
                 # lists
                 obstacle_list = [ob2, ob3, ground]
@@ -1673,6 +1701,11 @@ def main():
 
             for coin in coin_list:
                 coin.render_coin()
+
+            for torch in torch_list:
+                torch.update()
+                torch.draw(WINDOW)
+
             """
             for enemy in enemies:
                 enemy.update(player)
