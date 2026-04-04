@@ -34,8 +34,9 @@ Within the game, there is a tutorial level to help players understand the game m
 ---
 
 ## 🎮 Itch.io  
-**Dungeon Platformer will soon be available on itch.io, making it easy for anyone to download and play without needing a development setup. The itch.io release provides a simple, accessible way to experience the game outside of the source code, marking the transition from a local project to a publicly playable game. Players can try the game, share feedback, and experience the full dungeon challenge through the published itch.io version. 
-**---
+Dungeon Platformer will soon be available on itch.io, making it easy for anyone to download and play without needing a development setup. The itch.io release provides a simple, accessible way to experience the game outside of the source code, marking the transition from a local project to a publicly playable game. Players can try the game, share feedback, and experience the full dungeon challenge through the published itch.io version. 
+
+---
 
 ## 🚀 Future Plans
 Planned features include:
