@@ -1,5 +1,6 @@
-import pygame, sys, random, time, math, os
+import pygame, sys, random, time, math, os, subprocess
 from pygame.locals import *
+
 
 pygame.init()
 pygame.mixer.init()
@@ -13,6 +14,10 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # Initialize Variables
+player = None
+obstacle_list = []
+coin_list = []
+spikes = []
 portal = None
 points = 0
 selected_character = None
@@ -34,6 +39,7 @@ glow_speed = 0.05
 damage_flash_time = 0
 damage_flash_duration = 150
 torch_list = []
+play_music = False
 
 # Cutscene Variables
 cutscene_phase = 0  # 0 = story text, 1 = character walk, 2 = press space
@@ -167,8 +173,8 @@ class Player():
         self.hitbox = self.player_image.get_rect()
         self.player_color = (245, 0, 0)
         self.facing_left = True
-        self.health = 1
-        self.max_health = 10
+        self.health = 3
+        self.max_health = 3
         self.width = 50
         self.height = 50
         # add collision, gravity, and other code to the player class
@@ -291,6 +297,7 @@ class level_counter():
     def set_number(self, newNumber):
         self.number = newNumber
 
+level_counter1 = level_counter(1)
 
 # Score Counter Class
 class score_counter():
@@ -417,6 +424,8 @@ class Portal():
         self.y = self.base_y + int(math.sin(self.float_offset) * 10)
         self.hitbox.topleft = (self.x + 10, self.y + 10)
 
+portal = Portal(650 - 100 - 15, 150)
+
 # Button Class
 class button():
     def __init__(self, x, y, width, height, color, text, state):
@@ -449,11 +458,11 @@ exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
 # The main function that controls the game
 def main():
     looping = True
-
+    global player
     global level, show_message2, selected_character, show_message3, showMessage, startTime, showMessage2, startTime2
     global WINDOW, damage_flash_time
     global background, torch_list
-    global secret_obstacle_list
+    global secret_obstacle_list, play_music
     global tutorial_initialized
     global spikes
     global show_message
@@ -485,7 +494,7 @@ def main():
     spikes = []
     # level 1 obstacles
     obstacle_list.clear()
-    ob1 = pygame.Rect(290 - 60, 395 + 15, 150, 40)
+    ob1 = pygame.Rect(290+20, 395 + 15, 150, 40)
     ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
     obstacle_list = [ob1, ground]
 
@@ -510,6 +519,18 @@ def main():
     game_state = 'gameMenu'
 
     while looping:
+
+        keys = pygame.key.get_pressed()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        if keys[pygame.K_LCTRL] and keys[pygame.K_LSHIFT] and keys[pygame.K_r]:
+            pygame.quit()
+            subprocess.call([sys.executable, __file__])
+            sys.exit()
 
         if game_state == 'gameMenu':
             if not pygame.mixer.music.get_busy():
@@ -905,6 +926,8 @@ def main():
                 # coin_sound.play()
                 player.on_ground = False
 
+
+
             # --- Horizontal movement and collision ---
             player.x += player.vel_x
             player.hitbox.topleft = (player.x, player.y)
@@ -1121,10 +1144,43 @@ def main():
                 game_state = 'gameMenu'
                 creator_music_playing = False
 
+
+        elif game_state == 'win':
+            WINDOW.fill('grey')
+            font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 35)
+            text = font.render("YOU WIN!", True, (255, 255, 255))
+            x = WINDOW_WIDTH // 2 - text.get_width() // 2
+            y = WINDOW_HEIGHT // 2 - 200
+            WINDOW.blit(text, (x, y))
+
+            smaller_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 18)
+            text2 = smaller_font.render("Show this screen and collect your prize!", True, (255, 255, 255))
+            x = WINDOW_WIDTH // 2 - text2.get_width() // 2
+            y = WINDOW_HEIGHT // 2 + 150 - 275
+            WINDOW.blit(text2, (x, y))
+
+            text3 = font.render("Press r to restart.", True, (255, 255, 255))
+            x = WINDOW_WIDTH // 2 - text3.get_width() // 2
+            y = WINDOW_HEIGHT // 2 + 150 - 275 + 75
+            WINDOW.blit(text3, (x, y))
+
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_r:
+                        pygame.quit()
+                        os.system(f'python "{__file__}"')
+                        sys.exit()
+
         elif game_state == 'cutscene':
             global cutscene_phase, cutscene_start_time, cutscene_text_index, cutscene_char_index, darkness_alpha, damage_flash_time
 
             WINDOW.blit(background, (0, 0))
+            if not play_music:
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load(resource_path("assets/x/cutscene.ogg"))
+                pygame.mixer.music.set_volume(1.5)
+                pygame.mixer.music.play(-1)  # -1 makes it loop forever
+                play_music = True
 
             # ===== PHASE 1: Story Text =====
             if cutscene_phase == 0:
@@ -1169,7 +1225,7 @@ def main():
                     cutscene_start_time = pygame.time.get_ticks()
 
                 elapsed = pygame.time.get_ticks() - cutscene_start_time
-                walk_duration = 4350  # milliseconds 
+                walk_duration = 4350  # milliseconds
 
                 # Character position (left to right)
                 progress = elapsed / walk_duration  # 0.0 to 1.0
@@ -1228,7 +1284,7 @@ def main():
                     player.vel_y = 0
 
                     # Reset obstacles
-                    ob1 = pygame.Rect(290, 395 + 15, 100, 50)
+                    ob1 = pygame.Rect(290+20, 395 + 15, 100, 50)
                     ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
                     obstacle_list = [ob1, ground]
                     spikes.clear()
@@ -1245,6 +1301,11 @@ def main():
                     damage_flash_time = 0
 
                     # Start gameplay
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load(resource_path("assets/x/music0.ogg"))
+                    pygame.mixer.music.set_volume(1)
+                    pygame.mixer.music.play(-1)
+                    play_music = False
                     game_state = 'gameplay'
 
                     # Reset cutscene variables for next time
@@ -1303,6 +1364,10 @@ def main():
 
             if level == 1 and level_changing:
                 level_changing = False
+                pygame.mixer.music.stop()
+                pygame.mixer.music.load(resource_path("assets/x/music0.ogg"))
+                pygame.mixer.music.set_volume(1)
+                pygame.mixer.music.play(-1)
                 damage_flash_time = 0  # Reset flash timer
                 portal.set_position(650-100-7.5, 150-25)
                 player.x = 100
@@ -1322,7 +1387,7 @@ def main():
 
                 # level 1 obstacles
                 obstacle_list.clear()
-                ob1 = pygame.Rect(290, 395 + 15+10, 100, 50)
+                ob1 = pygame.Rect(290+20, 395 + 15+10, 100, 50)
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
                 obstacle_list = [ob1, ground]
 
@@ -1360,7 +1425,7 @@ def main():
                 coin_list.append(coin3)
 
                 # torches
-                torch_list = [Torch(500, 200+300-125)]
+                torch_list = []
 
                 # lists
                 obstacle_list = [ob2, ob3, ground]
@@ -1545,6 +1610,7 @@ def main():
 
             # level 6
             if level == 6 and level_changing == True:
+                game_state = 'win'
                 level_changing = False
 
                 # setting screen and background sizes less from the secret level
@@ -1818,18 +1884,24 @@ def main():
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
+                        pygame.quit()
+                        os.system(f'python "{__file__}"')
+                        sys.exit()
+
+                        '''
                         player_dead = False
                         level = 1
                         player.health = player.max_health
                         player.x = 100
                         player.y = 500
-
                         game_state = "gameMenu"
+                        '''
+
+
 
 
 
         pygame.display.update()
         fpsClock.tick(FPS)
-
 
 main()
