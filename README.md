@@ -21,18 +21,18 @@ Go into the portal to enter the next level
 
 Avoid spikes as they cause health to decrease 
 
-In the game, there is a turoial level to help players understand the game mechanics
+Within the game, there is a tutorial level to help players understand the game mechanics
 
 ---
 
-## 🧩 Features
-- Classic 2D platformer gameplay with physics engine 
-- Dungeon-themed environments  
-- Level-based music that changes as you progress  
-- Smooth player movement and level design  
-- Ongoing updates and improvements
-- Smooth sound effects
-- Game Menu 
+## 🧩 Recent Updates 
+- Win screen after beating all levels
+- Flickering torches
+- Improved UI
+- Added Death page after player dies
+- Controls (control + shift + r) to reset the game
+- Cutscene before starting gameplay
+- Level design changes 
 
 ---
 
@@ -48,10 +48,11 @@ Planned features include:
 - Multiple player skins  
 - Sprite sheet animations (player & coins)  
 - Multiplayer support
-- More levels (15+) 
+- More levels (15+)
+- Muliple background layers
+- Camera movement
 
 ---
 
 ## 📜 License
 This project is licensed under the **MIT License**.  
-Feel free to explore, modify, and learn from the code.
