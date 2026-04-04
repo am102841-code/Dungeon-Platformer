@@ -1,7 +1,6 @@
 import pygame, sys, random, time, math, os, subprocess
 from pygame.locals import *
 
-
 pygame.init()
 pygame.mixer.init()
 
@@ -91,7 +90,7 @@ level = 1
 overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
 overlay.set_alpha(50)
 
-WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.FULLSCREEN)
 pygame.display.set_caption('Platformer')
 
 clock = pygame.time.Clock()
@@ -1159,7 +1158,7 @@ def main():
             y = WINDOW_HEIGHT // 2 + 150 - 275
             WINDOW.blit(text2, (x, y))
 
-            text3 = font.render("Press r to restart.", True, (255, 255, 255))
+            text3 = font.render("Hold control shift r to restart.", True, (255, 255, 255))
             x = WINDOW_WIDTH // 2 - text3.get_width() // 2
             y = WINDOW_HEIGHT // 2 + 150 - 275 + 75
             WINDOW.blit(text3, (x, y))
@@ -1439,7 +1438,7 @@ def main():
                     level_changing = True
                     print("touched secret level")
                     level = "secret"
-                    WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+                    WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.FULLSCREEN)
                     background = pygame.transform.scale(background, (800, 600))
 
             # secret level
@@ -1493,7 +1492,6 @@ def main():
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
 
                 # setting screen and background sizes less from the secret level
-                WINDOW = pygame.display.set_mode((800, 600))
                 background = pygame.transform.scale(background, (800, 600))
 
                 if player.player_reset == True:
@@ -1537,7 +1535,6 @@ def main():
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
                 portal = Portal(650 - 100 + 125 + 10, 150 - 75 - 25 - 25)
                 # setting screen and background sizes less from the secret level
-                WINDOW = pygame.display.set_mode((800, 600))
                 background = pygame.transform.scale(background, (800, 600))
 
                 if player.player_reset == True:
@@ -1578,7 +1575,6 @@ def main():
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
                 portal = Portal(650 - 100 + 125, 150 - 75 - 20-10)
                 # setting screen and background sizes less from the secret level
-                WINDOW = pygame.display.set_mode((800, 600))
                 background = pygame.transform.scale(background, (800, 600))
 
                 if player.player_reset == True:
@@ -1614,7 +1610,6 @@ def main():
                 level_changing = False
 
                 # setting screen and background sizes less from the secret level
-                WINDOW = pygame.display.set_mode((800, 600))
                 background = pygame.transform.scale(background, (800, 600))
 
                 if player.player_reset == True:
@@ -1867,7 +1862,7 @@ def main():
             font = pygame.font.Font(None, 50)
             text = font.render("The dungeon claims another soul...", True, (200, 200, 200))
             text2 = font.render("Your journey ends here.", True, (200, 200, 200))
-            text3 = font.render("Press R to restart", True, (200, 200, 200))
+            text3 = font.render("Hold control shift r to restart.", True, (200, 200, 200))
 
             current_time = pygame.time.get_ticks()
             elapsed_time = current_time - death_time
@@ -1885,7 +1880,7 @@ def main():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         pygame.quit()
-                        os.system(f'python "{__file__}"')
+                        subprocess.call([sys.executable, __file__])
                         sys.exit()
 
                         '''
