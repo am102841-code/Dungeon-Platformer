@@ -2,26 +2,8 @@
 
 Dungeon Platformer is a **2D dungeon-themed platformer** inspired by games like *Terraria* and other *Rogue-like platformers*. The game has been in development for **over three years**, with frequent updates and improvements.
 
-Each level features **unique dungeon music**, with tracks that change from **levels 1–5**, creating an immersive atmosphere as you progress.
+Each level features **unique dungeon music**, with tracks that change from **levels 1–5**, creating an immersive atmosphere as you progress. I tested the game with over 60 people and adjusted it based on player feedback and experience.
 
----
-
-## 🎮 Dev Log 
-👉 **Check out my Dev Log here:**  
-https://github.com/am102841-code/Dungeon-Platformer/wiki
-
-
- 
-
-**How to play**
-
-Use arrow keys and spacebar to move around 
-
-Go into the portal to enter the next level 
-
-Avoid spikes as they cause health to decrease 
-
-Within the game, there is a tutorial level to help players understand the game mechanics
 
 ---
 
@@ -35,6 +17,27 @@ Within the game, there is a tutorial level to help players understand the game m
 - Level design changes 
 
 ---
+
+---
+
+ 
+
+**How to play**
+
+Use arrow keys and spacebar to move around 
+
+Go into the portal to enter the next level 
+
+Avoid spikes as they cause health to decrease 
+
+Within the game, there is a tutorial level to help players understand the game mechanics
+
+
+## 🎮 Dev Log 
+👉 **Check out my Dev Log here:**  
+https://github.com/am102841-code/Dungeon-Platformer/wiki
+
+
 
 ## 🧪 Playtesting
 Help improve the game by filling out the playtester feedback form:  
