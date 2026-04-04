@@ -16,7 +16,6 @@ Each level features **unique dungeon music**, with tracks that change from **lev
 - Cutscene before starting gameplay
 - Level design changes 
 
----
 
 ---
 
@@ -33,15 +32,8 @@ Avoid spikes as they cause health to decrease
 Within the game, there is a tutorial level to help players understand the game mechanics
 
 
-## 🎮 Dev Log 
-👉 **Check out my Dev Log here:**  
-https://github.com/am102841-code/Dungeon-Platformer/wiki
-
-
-
-## 🧪 Playtesting
-Help improve the game by filling out the playtester feedback form:  
-📋 https://forms.gle/4UzGfbfykKB6qY897
+## 🎮 Itch.io  
+Soon, Dungeon Platformer will be available on itch.io to play. 
 
 ---
 
