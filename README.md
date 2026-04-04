@@ -2,7 +2,7 @@
 
 Dungeon Platformer is a **2D dungeon-themed platformer** inspired by games like *Terraria* and other *Rogue-like platformers*. The game has been in development for **over three years**, with frequent updates and improvements.
 
-Each level features **unique dungeon music**, with tracks that change from **levels 1–5**, creating an immersive atmosphere as you progress. I tested the game with over 60 people and adjusted it based on player feedback and experience.
+Each level features **unique dungeon music**, with tracks that change from **levels 1–5**, creating an immersive atmosphere as you progress. The game was tested with over 60 people and it was adjusted based on player feedback and experience.
 
 
 ---
