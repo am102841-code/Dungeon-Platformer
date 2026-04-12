@@ -4,6 +4,8 @@ from pygame.locals import *
 pygame.init()
 pygame.mixer.init()
 
+# make the character selection after the player clicks the start button
+
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -90,7 +92,7 @@ level = 1
 overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
 overlay.set_alpha(50)
 
-WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.FULLSCREEN)
+WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Platformer')
 
 clock = pygame.time.Clock()
@@ -441,6 +443,61 @@ class button():
     def render_button(self):
         pygame.draw.rect(WINDOW, self.color, self.hitbox, 0, 5)
 
+
+class Shop:
+    def __init__(self):
+        self.coins = 10
+        self.current_skin = None
+
+        self.knight_unlocked = False
+        self.wizard_unlocked = False
+        self.archer_unlocked = False
+
+        self.data = {"knight": {'price': 10},
+                     "wizard": {'price': 10},
+                     "archer": {'price': 10,}
+                     }
+
+    def buy(self, name):
+        if name == 'knight':
+            knight = self.data[name]
+            if self.coins >= knight['price']:
+                self.knight_unlocked = True
+
+        if name == 'wizard':
+            wizard = self.data[name]
+            if self.coins >= wizard['price']:
+                self.wizard_unlocked = True
+
+        if name == 'archer':
+            archer = self.data[name]
+            if self.coins >= archer['price']:
+                self.archer_unlocked = True
+
+    def update_status(self):
+        show_message = False
+        if self.knight_unlocked:
+            pass # display message that knight is unlocked
+        if self.wizard_unlocked:
+            show_message = True
+            start_time = pygame.time.get_ticks()
+            if show_message == True:
+                elapsed_time = pygame.time.get_ticks() - start_time
+                if elapsed_time < 2000:
+                    font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 24)
+                    surface = font.render("Wizard purchased!", True, (255, 255, 255))
+                    x = int(WINDOW_WIDTH - surface.get_width() / 2)
+                    y = int(WINDOW_HEIGHT - surface.get_height() / 2)
+                    WINDOW.blit(surface, (x, y))
+            else:
+                show_message = False
+
+        if self.archer_unlocked:
+            pass
+
+    def display_status(self):
+        pass
+
 # Horizontal Collisions
 def horizontal_collision(player, Obstacle_list):
     for x in Obstacle_list:
@@ -450,9 +507,7 @@ def horizontal_collision(player, Obstacle_list):
             elif player.vel_x < 0:
                 player.hitbox.left = x.right
 
-
 exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
-
 
 # The main function that controls the game
 def main():
@@ -493,7 +548,7 @@ def main():
     spikes = []
     # level 1 obstacles
     obstacle_list.clear()
-    ob1 = pygame.Rect(290+20, 395 + 15, 150, 40)
+    ob1 = pygame.Rect(290+20+20, 395 + 15, 150, 40)
     ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
     obstacle_list = [ob1, ground]
 
@@ -623,12 +678,28 @@ def main():
             else:
                 skins.color = (160, 160, 160)
 
+            # Shop Button
+            x_value = 280 + 100
+            y_value = 490 + 100
+            shop_button = button(x_value, y_value, tb.width, tb.height, (160, 160, 160), 'Shop', None)
+
+            if shop_button.hitbox.collidepoint(mouse_pos):
+                shop_button.color = (130, 130, 130)
+            else:
+                shop_button.color = (160, 160, 160)
+
             skins.render_button()
             font3 = pygame.font.Font(None, 32)
             text = font3.render("Characters", True, GREY, None)
             x = skins.x + skins.width / 2 - 50 - 7.5
             y = skins.y + skins.height / 2 - 10
             WINDOW.blit(text, (x, y))
+
+            shop_button.render_button()
+            text67 = font3.render("Shop", True, GREY, None)
+            x = shop_button.x + shop_button.width / 2 - 50 - 7.5
+            y = shop_button.y + shop_button.height / 2 - 10
+            WINDOW.blit(text67, (x, y))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -667,6 +738,9 @@ def main():
                             game_state = 'tutorial_level'
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'skins'
+
+                    elif shop_button.hitbox.collidepoint(mouse_x, mouse_y):
+                        game_state = 'shop'
 
             if showMessage:
                 elapsed = pygame.time.get_ticks() - startTime
@@ -713,6 +787,8 @@ def main():
 
             pygame.display.update()
 
+        elif game_state == "shop":
+            print("in shop")
 
         elif game_state == "skins":
             # characters: knight; scarlet knight; wizard; witch; healer
@@ -1163,6 +1239,25 @@ def main():
             y = WINDOW_HEIGHT // 2 + 150 - 275 + 75
             WINDOW.blit(text3, (x, y))
 
+            start_x = -100
+            end_x = 400
+
+            player_x = start_x
+            player_y = 250
+            player_speed = 2 # pixels per frame
+
+            if player_x < end_x:
+                player_x += player_speed
+                if player_x > end_x:
+                    player_x = end_x  # ensure it stops exactly at target
+            #WINDOW.blit(player_image, (player.x, player.y))
+
+
+            if player_x == end_x:
+                pass # start showing text and the next part of the cutscene
+
+
+
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
@@ -1438,7 +1533,7 @@ def main():
                     level_changing = True
                     print("touched secret level")
                     level = "secret"
-                    WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.FULLSCREEN)
+                    WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
                     background = pygame.transform.scale(background, (800, 600))
 
             # secret level
