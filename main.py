@@ -41,6 +41,10 @@ damage_flash_time = 0
 damage_flash_duration = 150
 torch_list = []
 play_music = False
+shop_notice_text = ""
+shop_notice_until = 0
+skins_notice_text = ""
+skins_notice_until = 0
 
 # Cutscene Variables
 cutscene_phase = 0  # 0 = story text, 1 = character walk, 2 = press space
@@ -446,57 +450,201 @@ class button():
 
 class Shop:
     def __init__(self):
-        self.coins = 10
-        self.current_skin = None
+        self.data = {
+            "knight": {"price": 0},
+            "wizard": {"price": 10},
+            "archer": {"price": 12}
+        }
+        self.unlocked = {
+            "knight": True,
+            "wizard": False,
+            "archer": False
+        }
 
-        self.knight_unlocked = False
-        self.wizard_unlocked = False
-        self.archer_unlocked = False
+    def is_unlocked(self, name):
+        return self.unlocked.get(name, False)
 
-        self.data = {"knight": {'price': 10},
-                     "wizard": {'price': 10},
-                     "archer": {'price': 10,}
-                     }
+    def buy(self, name, current_points):
+        if name not in self.data:
+            return False, "Unknown item.", current_points
+        if self.is_unlocked(name):
+            return False, f"{name.title()} is already unlocked.", current_points
 
-    def buy(self, name):
-        if name == 'knight':
-            knight = self.data[name]
-            if self.coins >= knight['price']:
-                self.knight_unlocked = True
+        price = self.data[name]["price"]
+        if current_points < price:
+            return False, f"Not enough points for {name.title()}.", current_points
 
-        if name == 'wizard':
-            wizard = self.data[name]
-            if self.coins >= wizard['price']:
-                self.wizard_unlocked = True
+        self.unlocked[name] = True
+        return True, f"{name.title()} purchased!", current_points - price
 
-        if name == 'archer':
-            archer = self.data[name]
-            if self.coins >= archer['price']:
-                self.archer_unlocked = True
+    def is_valid_item(self, name):
+        return name in self.data
 
-    def update_status(self):
-        show_message = False
-        if self.knight_unlocked:
-            pass # display message that knight is unlocked
-        if self.wizard_unlocked:
-            show_message = True
-            start_time = pygame.time.get_ticks()
-            if show_message == True:
-                elapsed_time = pygame.time.get_ticks() - start_time
-                if elapsed_time < 2000:
-                    font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 24)
-                    surface = font.render("Wizard purchased!", True, (255, 255, 255))
-                    x = int(WINDOW_WIDTH - surface.get_width() / 2)
-                    y = int(WINDOW_HEIGHT - surface.get_height() / 2)
-                    WINDOW.blit(surface, (x, y))
+    def get_price(self, name):
+        if not self.is_valid_item(name):
+            return None
+        return self.data[name]["price"]
+
+    def get_status_text(self, name):
+        if not self.is_valid_item(name):
+            return "Unknown"
+        if self.is_unlocked(name):
+            if self.current_skin == name:
+                return "Equipped"
+            return "Unlocked"
+        return f"Price: {self.get_price(name)}"
+
+    def can_buy(self, name, current_points):
+        if not self.is_valid_item(name):
+            return False
+        if self.unlocked(name):
+            return False
+        return current_points >= self.get_price(name)
+
+    def render_shop(self, window, mouse_pos, points, knight_img, wizard_img, archer_img):
+        title_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 32)
+        body_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 20)
+        small_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 16)
+
+        window.fill((35, 35, 40))
+
+        title = title_font.render("Shop", True, (230, 230, 230))
+        window.blit(title, (WINDOW_WIDTH // 2 - title.get_width() // 2, 40))
+
+        points_text = body_font.render(f"Your points: {points}", True, (255, 215, 0))
+        window.blit(points_text, (40, 40))
+
+        items = [
+            ("knight", knight_img, (100, 160)),
+            ("wizard", wizard_img, (320, 160)),
+            ("archer", archer_img, (540, 160)),
+        ]
+
+        buy_buttons = {}
+
+        for item_name, item_image, pos in items:
+            card_rect = pygame.Rect(pos[0], pos[1], 180, 250)
+            pygame.draw.rect(window, (60, 60, 70), card_rect, border_radius=8)
+            pygame.draw.rect(window, (95, 95, 110), card_rect, 3, border_radius=8)
+
+            img = pygame.transform.scale(item_image, (100, 100))
+            window.blit(img, (card_rect.centerx - 50, card_rect.y + 20))
+
+            name_text = body_font.render(item_name.title(), True, (230, 230, 230))
+            window.blit(name_text, (card_rect.centerx - name_text.get_width() // 2, card_rect.y + 130))
+
+            if self.is_unlocked(item_name):
+                status = small_font.render("Unlocked", True, (120, 255, 120))
+                btn_label = "Owned"
+                normal_color = (110, 110, 120)
+                hover_color = (90, 90, 100)
             else:
-                show_message = False
+                price = self.get_price(item_name)
+                status = small_font.render(f"Price: {price}", True, (255, 215, 0))
+                btn_label = "Buy"
+                normal_color = (110, 140, 200)
+                hover_color = (90, 120, 180)
 
-        if self.archer_unlocked:
-            pass
+            window.blit(status, (card_rect.centerx - status.get_width() // 2, card_rect.y + 160))
 
-    def display_status(self):
-        pass
+            buy_btn = button(card_rect.x + 25, card_rect.y + 190, 130, 40, normal_color, btn_label, None)
+            if buy_btn.hitbox.collidepoint(mouse_pos):
+                buy_btn.color = hover_color
+            buy_btn.render_button()
+
+            btn_text = small_font.render(buy_btn.text, True, (245, 245, 245))
+            window.blit(btn_text, (
+                buy_btn.hitbox.centerx - btn_text.get_width() // 2,
+                buy_btn.hitbox.centery - btn_text.get_height() // 2
+            ))
+
+            buy_buttons[item_name] = buy_btn
+
+        back_btn = button(640, 520, 120, 45, (140, 80, 80), "Back", None)
+        if back_btn.hitbox.collidepoint(mouse_pos):
+            back_btn.color = (120, 65, 65)
+        back_btn.render_button()
+
+        back_text = small_font.render("Back", True, (255, 255, 255))
+        window.blit(back_text, (
+            back_btn.hitbox.centerx - back_text.get_width() // 2,
+            back_btn.hitbox.centery - back_text.get_height() // 2
+        ))
+
+        return buy_buttons, back_btn
+
+shop = Shop()
+
+class CreatorCard:
+    def __init__(self, x, y, title, summary, details):
+        self.x = x
+        self.y = y
+        self.title = title
+        self.summary = summary
+        self.details = details  # list of strings
+
+        self.base_w = 180+25
+        self.base_h = 120+25
+        self.hover_w = 230+25
+        self.hover_h = 190+25
+
+        self.current_w = float(self.base_w)
+        self.current_h = float(self.base_h)
+
+    def update(self, mouse_pos):
+        rect = pygame.Rect(self.x, self.y, int(self.current_w), int(self.current_h))
+        is_hovered = rect.collidepoint(mouse_pos)
+
+        target_w = self.hover_w if is_hovered else self.base_w
+        target_h = self.hover_h if is_hovered else self.base_h
+
+        # smooth expansion / shrink
+        speed = 0.18
+        self.current_w += (target_w - self.current_w) * speed
+        self.current_h += (target_h - self.current_h) * speed
+
+        return is_hovered
+
+    def draw(self, surface, title_font, body_font, is_hovered):
+        rect = pygame.Rect(self.x, self.y, int(self.current_w), int(self.current_h))
+
+        bg_color = (35, 35, 45) if not is_hovered else (45, 55, 75)
+        border_color = (90, 120, 180) if not is_hovered else (130, 190, 255)
+
+        pygame.draw.rect(surface, bg_color, rect, border_radius=12)
+        pygame.draw.rect(surface, border_color, rect, width=3, border_radius=12)
+
+        title_surf = title_font.render(self.title, True, (235, 235, 245))
+        surface.blit(title_surf, (rect.x + 12, rect.y + 10))
+
+        summary_surf = body_font.render(self.summary, True, (185, 195, 215))
+        surface.blit(summary_surf, (rect.x + 12, rect.y + 45))
+
+        if is_hovered:
+            y = rect.y + 75
+            for line in self.details:
+                detail_surf = body_font.render("- " + line, True, (215, 225, 245))
+                surface.blit(detail_surf, (rect.x + 12, y))
+                y += 22
+
+
+creator_cards = [
+    CreatorCard(90-20-25, 180, "About Me", "Indie dev + student-athlete", [
+        "Built this game over 2 years",
+        "Focused on level feel",
+        "Enjoys fantasy platformers"
+    ]),
+    CreatorCard(310-10, 180, "Game Features", "Systems in this game", [
+        "Physics + collision",
+        "Cutscenes + music",
+        "Portals, spikes, coins"
+    ]),
+    CreatorCard(530-5+25+5, 180, "Thanks", "People who helped", [
+        "Playtesters and friends",
+        "Feedback improved balance",
+        "Thank you for playing"
+    ]),
+]
 
 # Horizontal Collisions
 def horizontal_collision(player, Obstacle_list):
@@ -523,6 +671,7 @@ def main():
     global points, points_added
     global menu_jump_timer, menu_on_ground, menu_x_speed, menu_y_speed, menu_y, menu_x
     global jumping_sound, overlay
+    global shop, shop_notice_text, shop_notice_until, skins_notice_text, skins_notice_until
 
     player = Player()
 
@@ -787,8 +936,32 @@ def main():
 
             pygame.display.update()
 
+        # SHOP
         elif game_state == "shop":
-            print("in shop")
+            mouse_pos = pygame.mouse.get_pos()
+
+            buy_buttons, back_btn = shop.render_shop(
+                WINDOW, mouse_pos, points, knight, wizard, archer
+            )
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = event.pos
+
+                    if back_btn.hitbox.collidepoint(mouse_x, mouse_y):
+                        game_state = "gameMenu"
+                    else:
+                        for item_name, buy_btn in buy_buttons.items():
+                            if buy_btn.hitbox.collidepoint(mouse_x, mouse_y):
+                                success, message, new_points = shop.buy(item_name, points)
+                                points = new_points
+                                shop_notice_text = message
+                                shop_notice_until = pygame.time.get_ticks() + 2000
+                                break
 
         elif game_state == "skins":
             # characters: knight; scarlet knight; wizard; witch; healer
@@ -896,24 +1069,31 @@ def main():
 
             # if wizard is clicked
             if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                selected_character = "wizard"
-                selected_sound.play()
-                start_time2 = time.time()
-                player.player_image = wizard
-                player.player_flipped_image = pygame.transform.flip(wizard, True, False)
-                show_message2 = True
-                text2 = "Wizard was selected!"
-                # WINDOW.blit(w, (wx, wy))
+                if shop.is_unlocked("wizard"):
+                    selected_character = "wizard"
+                    selected_sound.play()
+                    start_time2 = time.time()
+                    player.player_image = wizard
+                    player.player_flipped_image = pygame.transform.flip(wizard, True, False)
+                    show_message2 = True
+                    text2 = "Wizard was selected!"
+                else:
+                    skins_notice_text = "Wizard is locked. Buy it in the Shop."
+                    skins_notice_until = pygame.time.get_ticks() + 2000
 
             if hitbox3.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                selected_character = "archer"
-                selected_sound.play()
-                start_time3 = time.time()
-                # use the archer image (the smaller 'archer' surface you created earlier)
-                player.player_image = archer
-                player.player_flipped_image = pygame.transform.flip(archer, True, False)
-                show_message3 = True
-                text3 = "Archer was selected!"
+                if shop.is_unlocked("archer"):
+                    selected_character = "archer"
+                    selected_sound.play()
+                    start_time3 = time.time()
+                    # use the archer image (the smaller 'archer' surface you created earlier)
+                    player.player_image = archer
+                    player.player_flipped_image = pygame.transform.flip(archer, True, False)
+                    show_message3 = True
+                    text3 = "Archer was selected!"
+                else:
+                    skins_notice_text = "Archer is locked. Buy it in the Shop."
+                    skins_notice_until = pygame.time.get_ticks() + 2000
 
             # Show Knight text
             if show_message == True:
@@ -934,6 +1114,10 @@ def main():
                     WINDOW.blit(exitfontobj.render("Archer was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
                 else:
                     show_message3 = False
+
+            if pygame.time.get_ticks() < skins_notice_until:
+                notice_surface = exitfontobj.render(skins_notice_text, True, (0, 0, 0))
+                WINDOW.blit(notice_surface, (450, 170))
 
 
         elif game_state == 'tutorial_level':
@@ -1118,7 +1302,7 @@ def main():
         elif game_state == 'creator':
             global creator_music_playing
             # mouseClicked = False
-            WINDOW.fill('lightgrey')
+            WINDOW.fill('darkgrey')
 
             Titlefontobj = pygame.font.Font(None, 64)
             if not creator_music_playing:
@@ -1127,68 +1311,14 @@ def main():
                 pygame.mixer.music.play(-1)
                 creator_music_playing = True
 
-            font = pygame.font.Font(None, 30)
+            mouse_pos = pygame.mouse.get_pos()
 
-            title = "Creator: Ankitha Mukund - Independent Game Developer and Student Athlete"
-            txt = font.render(title, True, TEXT_COLOR, None)
-            x = 200 - 150 - 25
-            y = 250 - 200
-            WINDOW.blit(txt, (x, y))
+            title_font = pygame.font.Font(None, 32)
+            body_font = pygame.font.Font(None, 22)
 
-            # overlay
-            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
-            overlay.fill((0, 0, 0))
-            overlay.set_alpha(120)
-            WINDOW.blit(overlay, (0, 0))
-
-            # panel
-            width = 600
-            height = 350
-            x = (WINDOW_WIDTH - width) // 2
-            y = (WINDOW_HEIGHT - height) // 2
-            panel = pygame.Surface((width, height), pygame.SRCALPHA)
-            panel.fill((30, 30, 35, 235))
-            WINDOW.blit(panel, (x, y))
-
-            # glow border
-            glow = 6
-            pygame.draw.rect(WINDOW, (0, 60, 120), (x - glow, y - glow, width + glow * 2, height + glow * 2),
-                             width=glow * 2, border_radius=14 + glow)
-
-            # sharp border
-            pygame.draw.rect(
-                WINDOW,
-                (70, 150, 200),
-                (x, y, width, height),
-                width=3,
-                border_radius=14
-            )
-
-            python = pygame.image.load(resource_path('assets/x/PYTHON.png')).convert_alpha()
-            python = pygame.transform.scale(python, (250 / 2, 250 / 2))
-            x22 = 200
-            y22 = 400 - 150 + 100 - 45
-            WINDOW.blit(python, (x22, y22))
-
-            char = pygame.image.load(resource_path('assets/x/KNIGHT2.png')).convert_alpha()
-            char = pygame.transform.scale(char, (250 / 2, 250 / 2))
-            WINDOW.blit(char, (x22 + 275, y22))
-
-            text = (
-                "A big thanks to all of the playtesters who helped me refine this game.",
-                "Throughout programming this game for over 2 years, many additions have been made,",
-                "with Collision Detection, Physics Engine, Music, and more",
-                "'Programming is not about typing, it's about thinking.' - Rich Hickey")
-
-            font = pygame.font.Font(None, 20)
-            line_spacing = 35
-
-            for i, line in enumerate(text):
-                rendered_line = font.render(line, True, (100, 200, 255))
-                line_x = x + (width - rendered_line.get_width()) // 2
-                line_y = y + 20 + i * line_spacing
-                WINDOW.blit(rendered_line, (line_x, line_y))
-
+            for card in creator_cards:
+                hovered = card.update(mouse_pos)
+                card.draw(WINDOW, title_font, body_font, hovered)
 
             # Exit Button
             exit_button = button(600, 500 - 75 + 100 - 50 + 5 + 5, 100, 100, 'orange', 'exit', None)
@@ -1201,6 +1331,14 @@ def main():
             y = 500 - 75 + 50 - 25 + 15 + 50 + 5 + 5
 
             WINDOW.blit(ExitText, (x, y))
+
+            Titlefontobj = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 96)
+            Title = Titlefontobj.render("Creator", True, (220, 240, 255))
+            x = WINDOW_WIDTH // 2 - Title.get_width() // 2
+            y = 40
+            WINDOW.blit(Title, (x, y))
+
+
 
             mouseClicked = False
 
