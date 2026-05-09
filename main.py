@@ -460,6 +460,7 @@ class Shop:
             "wizard": False,
             "archer": False
         }
+        self.current_skin = "knight"
 
     def is_unlocked(self, name):
         return self.unlocked.get(name, False)
@@ -497,7 +498,7 @@ class Shop:
     def can_buy(self, name, current_points):
         if not self.is_valid_item(name):
             return False
-        if self.unlocked(name):
+        if self.is_unlocked(name):
             return False
         return current_points >= self.get_price(name)
 
@@ -839,16 +840,11 @@ def main():
 
             skins.render_button()
             font3 = pygame.font.Font(None, 32)
-            text = font3.render("Characters", True, GREY, None)
-            x = skins.x + skins.width / 2 - 50 - 7.5
+            text = font3.render("Shop", True, GREY, None)
+            x = skins.x + skins.width / 2 - 50 - 7.5 + 45 - 15
             y = skins.y + skins.height / 2 - 10
             WINDOW.blit(text, (x, y))
 
-            shop_button.render_button()
-            text67 = font3.render("Shop", True, GREY, None)
-            x = shop_button.x + shop_button.width / 2 - 50 - 7.5
-            y = shop_button.y + shop_button.height / 2 - 10
-            WINDOW.blit(text67, (x, y))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -857,26 +853,7 @@ def main():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
                     if start_button.hitbox.collidepoint(mouse_x, mouse_y):
-                        if selected_character is None:
-                            showMessage = True
-                            startTime = pygame.time.get_ticks()
-                        else:
-                            game_state = "cutscene"
-                            level = 1
-                            level_counter1.set_number(1)
-
-                            # rebuild level 1
-                            ob1 = pygame.Rect(290, 395 + 15, 100, 50)
-                            ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
-
-                            obstacle_list = [ob1, ground]
-                            spikes.clear()
-
-                            player.health = player.max_health
-                            player.x = 100
-                            player.y = 500
-                            tutorial_initialized = False
-                            #game_state = 'gameplay'
+                        game_state = "charecter_select"
                     elif button2.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'creator'
                     elif tb.hitbox.collidepoint(mouse_x, mouse_y):
@@ -886,10 +863,8 @@ def main():
                         else:
                             game_state = 'tutorial_level'
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
-                        game_state = 'skins'
-
-                    elif shop_button.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'shop'
+
 
             if showMessage:
                 elapsed = pygame.time.get_ticks() - startTime
@@ -962,163 +937,6 @@ def main():
                                 shop_notice_text = message
                                 shop_notice_until = pygame.time.get_ticks() + 2000
                                 break
-
-        elif game_state == "skins":
-            # characters: knight; scarlet knight; wizard; witch; healer
-            WINDOW.fill('lightgrey')
-
-            # text
-            my_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 24)
-            # font2 = pygame.font.Font(None, 75)
-            text = my_font.render("Click to choose your character", True, (0, 0, 0), None)
-            x = 125 - 75 - 20 - 7.5
-            y = 40 + 20 + 25
-            WINDOW.blit(text, (x, y))
-
-            # knight image
-            knight2 = pygame.transform.scale(knight, (240 - 30 - 20, 240 - 30 - 20))
-            WINDOW.blit(knight2, (125 - 50 - 25 + 50 - 10 + 20 - 5, 200 - 20 - 25 + 40))
-
-            # knight text
-            font3 = pygame.font.Font(None, 32)
-            text = font3.render("Knight", True, (0, 0, 0), None)
-            WINDOW.blit(text, (130 + 15, 335))
-
-            # make hitbox
-            hitbox = knight.get_rect()
-            hitbox.topleft = (125, 200)
-
-            # wizard image
-            wizard_image = pygame.image.load(resource_path("assets/x/WIZARD.png")).convert_alpha()
-            wizard_image = pygame.transform.scale(wizard_image, (200, 200))
-            WINDOW.blit(wizard_image, (265 - 25, 200))
-
-            # wizard text
-            text = font3.render("Wizard", True, (0, 0, 0), None)
-            WINDOW.blit(text, (130 + 15 + 125 + 20, 335))
-
-            # make hitbox2
-            hitbox2 = wizard_image.get_rect()
-            hitbox2.topleft = (225, 200)
-
-            # archer image
-            archer_image = pygame.image.load(resource_path("assets/x/KNIGHT.png")).convert_alpha()
-            archer_image = pygame.transform.scale(archer_image, (120, 120))
-            WINDOW.blit(archer_image, (265 - 25 + 15 + 250 - 100 + 30 - 10, 200))
-
-            # archer text
-            archer_text = font3.render("Archer", True, (0, 0, 0), None)
-            WINDOW.blit(archer_text, (130 + 15 + 125 + 20 + 125 + 30 - 10, 335))
-
-            # make hitbox3
-            hitbox3 = archer_image.get_rect()
-            hitbox3.topleft = (130 + 15 + 125 + 20 + 125, 335)
-
-            # rectangle borders
-            border = pygame.Rect(130 - 25, 200, 170 - 25, 170)
-            pygame.draw.rect(WINDOW, (0, 0, 0), border, width=5)
-
-            border2 = pygame.Rect(130 - 25 + 150, 200, 170 - 25, 170)
-            pygame.draw.rect(WINDOW, (0, 0, 0), border2, width=5)
-
-            border3 = pygame.Rect(130 - 25 + 150 + 175 - 20 - 3.5, 200, 170 - 25, 170)
-            pygame.draw.rect(WINDOW, (0, 0, 0), border3, width=5)
-
-            # elf image
-            # elf = pygame.image.load("ELF.png").convert_alpha()
-            # elf = pygame.transform.scale(elf, (100, 100))
-            # WINDOW.blit(elf, (445, 200))
-
-            # Exit Button
-            exit_button = button(600, 500 - 75, 100, 100, 'orange', 'exit', None)
-            exit_button.render_button()
-            exitfontobj = pygame.font.Font(None, 32)
-
-            # Exit Button text
-            ExitText = exitfontobj.render("Exit", True, TEXT_COLOR, None)
-            x = 600 + 50 - 25
-            y = 500 - 75 + 50 - 25 + 15
-
-            WINDOW.blit(ExitText, (x, y))
-
-            mouseClicked = False
-
-            for event in pygame.event.get():
-                # if clicked
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouseClicked = True
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-
-            # Check EXIT button click
-            if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                game_state = 'gameMenu'
-            # if knight is clicked
-            if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                selected_character = "knight"
-                selected_sound.play()
-                start_time = time.time()
-                player.player_image = knight
-                player.player_flipped_image = pygame.transform.flip(knight, True, False)
-                show_message = True
-                text = "Knight was selected!"
-                # WINDOW.blit(k, (kx, ky)) # make the text stay for longer
-
-            # if wizard is clicked
-            if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                if shop.is_unlocked("wizard"):
-                    selected_character = "wizard"
-                    selected_sound.play()
-                    start_time2 = time.time()
-                    player.player_image = wizard
-                    player.player_flipped_image = pygame.transform.flip(wizard, True, False)
-                    show_message2 = True
-                    text2 = "Wizard was selected!"
-                else:
-                    skins_notice_text = "Wizard is locked. Buy it in the Shop."
-                    skins_notice_until = pygame.time.get_ticks() + 2000
-
-            if hitbox3.collidepoint((mouse_x, mouse_y)) and mouseClicked:
-                if shop.is_unlocked("archer"):
-                    selected_character = "archer"
-                    selected_sound.play()
-                    start_time3 = time.time()
-                    # use the archer image (the smaller 'archer' surface you created earlier)
-                    player.player_image = archer
-                    player.player_flipped_image = pygame.transform.flip(archer, True, False)
-                    show_message3 = True
-                    text3 = "Archer was selected!"
-                else:
-                    skins_notice_text = "Archer is locked. Buy it in the Shop."
-                    skins_notice_until = pygame.time.get_ticks() + 2000
-
-            # Show Knight text
-            if show_message == True:
-                if time.time() - start_time < 1:
-                    WINDOW.blit(exitfontobj.render("Knight was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
-                else:
-                    show_message = False
-
-            # Show Wizard text
-            if show_message2 == True:
-                if time.time() - start_time2 < 1:
-                    WINDOW.blit(exitfontobj.render("Wizard was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
-                else:
-                    show_message2 = False
-
-            if show_message3 == True:
-                if time.time() - start_time3 < 1:
-                    WINDOW.blit(exitfontobj.render("Archer was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
-                else:
-                    show_message3 = False
-
-            if pygame.time.get_ticks() < skins_notice_until:
-                notice_surface = exitfontobj.render(skins_notice_text, True, (0, 0, 0))
-                WINDOW.blit(notice_surface, (450, 170))
-
 
         elif game_state == 'tutorial_level':
             # Exit Button
@@ -1549,6 +1367,205 @@ def main():
                 if event.type == QUIT:
                     pygame.quit()
                     sys.exit()
+
+        elif game_state == "charecter_select":
+            # title: choose your charecter
+            # draw all of the characters in their boxes
+            # characters: knight; scarlet knight; wizard; witch; healer
+            WINDOW.fill('lightgrey')
+
+            # text
+            my_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 24)
+            # font2 = pygame.font.Font(None, 75)
+            text = my_font.render("Click to choose your character", True, (0, 0, 0), None)
+            x = 125 - 75 - 20 - 7.5
+            y = 40 + 20 + 25
+            WINDOW.blit(text, (x, y))
+
+            # knight image
+            knight2 = pygame.transform.scale(knight, (240 - 30 - 20, 240 - 30 - 20))
+            WINDOW.blit(knight2, (125 - 50 - 25 + 50 - 10 + 20 - 5, 200 - 20 - 25 + 40))
+
+            # knight text
+            font3 = pygame.font.Font(None, 32)
+            text = font3.render("Knight", True, (0, 0, 0), None)
+            WINDOW.blit(text, (130 + 15, 335))
+
+            # make hitbox
+            hitbox = knight.get_rect()
+            hitbox.topleft = (125, 200)
+
+            # wizard image
+            wizard_image = pygame.image.load(resource_path("assets/x/WIZARD.png")).convert_alpha()
+            wizard_image = pygame.transform.scale(wizard_image, (200, 200))
+            WINDOW.blit(wizard_image, (265 - 25, 200))
+
+            # wizard text
+            text = font3.render("Wizard", True, (0, 0, 0), None)
+            WINDOW.blit(text, (130 + 15 + 125 + 20, 335))
+
+            # make hitbox2
+            hitbox2 = wizard_image.get_rect()
+            hitbox2.topleft = (225, 200)
+
+            # archer image
+            archer_image = pygame.image.load(resource_path("assets/x/KNIGHT.png")).convert_alpha()
+            archer_image = pygame.transform.scale(archer_image, (120, 120))
+            WINDOW.blit(archer_image, (265 - 25 + 15 + 250 - 100 + 30 - 10, 200))
+
+            # archer text
+            archer_text = font3.render("Archer", True, (0, 0, 0), None)
+            WINDOW.blit(archer_text, (130 + 15 + 125 + 20 + 125 + 30 - 10, 335))
+
+            # make hitbox3
+            hitbox3 = archer_image.get_rect()
+            hitbox3.topleft = (130 + 15 + 125 + 20 + 125, 335)
+
+            # rectangle borders
+            border = pygame.Rect(130 - 25, 200, 170 - 25, 170)
+            pygame.draw.rect(WINDOW, (0, 0, 0), border, width=5)
+
+            border2 = pygame.Rect(130 - 25 + 150, 200, 170 - 25, 170)
+            pygame.draw.rect(WINDOW, (0, 0, 0), border2, width=5)
+
+            border3 = pygame.Rect(130 - 25 + 150 + 175 - 20 - 3.5, 200, 170 - 25, 170)
+            pygame.draw.rect(WINDOW, (0, 0, 0), border3, width=5)
+
+            # elf image
+            # elf = pygame.image.load("ELF.png").convert_alpha()
+            # elf = pygame.transform.scale(elf, (100, 100))
+            # WINDOW.blit(elf, (445, 200))
+
+            # Exit Button
+            exit_button = button(600, 500 - 75, 100, 100, 'orange', 'exit', None)
+            exit_button.render_button()
+            exitfontobj = pygame.font.Font(None, 32)
+
+            # Exit Button text
+            ExitText = exitfontobj.render("Continue", True, TEXT_COLOR, None)
+            x = 600 + 50 - 25
+            y = 500 - 75 + 50 - 25 + 15
+
+            WINDOW.blit(ExitText, (x, y))
+
+            mouseClicked = False
+
+            for event in pygame.event.get():
+                # if clicked
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouseClicked = True
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+
+            # Check EXIT button click
+            if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                if selected_character is None:
+                    skins_notice_text = "Choose a character first!"
+                    skins_notice_until = pygame.time.get_ticks() + 2000
+                else:
+                    game_state = "cutscene"
+                    level = 1
+                    level_counter1.set_number(1)
+                    ob1 = pygame.Rect(290, 395 + 15, 100, 50)
+                    ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
+                    obstacle_list[:] = [ob1, ground]
+                    spikes.clear()
+                    player.health = player.max_health
+                    player.x = 100
+                    player.y = 500
+                    tutorial_initialized = False
+
+            # if knight is clicked
+            if hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                selected_character = "knight"
+                selected_sound.play()
+                start_time = time.time()
+                player.player_image = knight
+                player.player_flipped_image = pygame.transform.flip(knight, True, False)
+                show_message = True
+                text = "Knight was selected!"
+                # WINDOW.blit(k, (kx, ky)) # make the text stay for longer
+
+            if hitbox2.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                selected_character = "wizard"
+                selected_sound.play()
+                start_time2 = time.time()
+                player.player_image = wizard
+                player.player_flipped_image = pygame.transform.flip(wizard, True, False)
+                player.player_now = wizard
+                show_message2 = True
+                text2 = "Wizard was selected!"
+
+            if hitbox3.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                selected_character = "archer"
+                selected_sound.play()
+                start_time3 = time.time()
+                player.player_image = archer
+                player.player_flipped_image = pygame.transform.flip(archer, True, False)
+                player.player_now = archer
+                show_message3 = True
+                text3 = "Archer was selected!"
+
+            # Show Knight text
+            if show_message == True:
+                if time.time() - start_time < 1:
+                    WINDOW.blit(exitfontobj.render("Knight was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
+                else:
+                    show_message = False
+
+            # Show Wizard text
+            if show_message2 == True:
+                if time.time() - start_time2 < 1:
+                    WINDOW.blit(exitfontobj.render("Wizard was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
+                else:
+                    show_message2 = False
+
+            if show_message3 == True:
+                if time.time() - start_time3 < 1:
+                    WINDOW.blit(exitfontobj.render("Archer was selected!", True, (0, 0, 0)), (450 + 75, 200 - 50))
+                else:
+                    show_message3 = False
+
+            if pygame.time.get_ticks() < skins_notice_until:
+                notice_surface = exitfontobj.render(skins_notice_text, True, (0, 0, 0))
+                WINDOW.blit(notice_surface, (450, 170))
+
+
+        elif game_state == 'tutorial_level':
+            # Exit Button
+            exit_button = button(exit_button_rect.x, exit_button_rect.y, exit_button_rect.width,
+                                 exit_button_rect.height, 'orange', 'exit', None)
+            exitfontobj = pygame.font.Font(None, 32)
+
+            # Exit Button text
+            ExitText = exitfontobj.render("Exit", True, TEXT_COLOR, None)
+            x = 700
+            y = 75 + 15
+
+            mouseClicked = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if exit_button_rect.collidepoint(mouse_pos):
+                        game_state = 'gameMenu'
+                        level = 1
+
+                        # reset tutorial objects
+                        obstacle_list.clear()
+                        spikes.clear()
+                        tutorial_initialized = False
+
+            WINDOW.fill('lightblue')
+
+            font2 = pygame.font.SysFont(None, 36)
+            text_surface = font2.render("Use the arrow or letter keys to move and jump!", True, (155, 155, 155))
+
 
         elif game_state == 'gameplay':
             # for testing
