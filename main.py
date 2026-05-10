@@ -1,4 +1,4 @@
-import pygame, sys, random, time, math, os, subprocess
+import pygame, sys, random, time, math, os, subprocess, json
 from pygame.locals import *
 
 pygame.init()
@@ -91,6 +91,7 @@ fpsClock = pygame.time.Clock()
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 level = 1
+SAVE_FILE = os.path.join(os.path.abspath("."), "save_game.json")
 
 # overlay for all levels
 overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -752,20 +753,21 @@ def main():
             background_img = pygame.transform.scale(background_img, (800, 600))
             WINDOW.blit(background_img, (0, 0))
 
-            fontObj = pygame.font.Font(None, 64)
+            title_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 42    )
             title_text = "Dungeon Platformer"
 
             # shadow for title
-            shadow_surface = fontObj.render(title_text, True, (0, 0, 0))
+            shadow_surface = title_font.render(title_text, True, (0, 0, 0))
             x = int(WINDOW.get_width() / 2 - shadow_surface.get_width() / 2)
             y = int(WINDOW.get_height() / 2 - 45 - shadow_surface.get_height() / 2) - 35
             WINDOW.blit(shadow_surface, (x + 3, y + 3))
-            title_surface = fontObj.render(title_text, True, TEXT_COLOR)
+            title_surface = title_font.render(title_text, True, TEXT_COLOR)
             WINDOW.blit(title_surface, (x, y))
 
             test_button = button(0, 0, 100, 100, 'orange', 'hello', None)
 
             # Start Button
+            font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
             sx = 280
             sy = 250 + 10 + 17.5 + 17.5 + 5 + 2
             start_button = button(sx, sy, 200, 50, (160, 160, 160), 'start', None)
@@ -776,11 +778,11 @@ def main():
                 start_button.color = (160, 160, 160)
 
             start_button.render_button()
+            font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
 
-            FONT = pygame.font.Font(None, 32)
-            txt = FONT.render("Start", True, GREY, None)
-            tx = sx + start_button.width / 2 - 30 - 5 + 7.5
-            ty = sy + start_button.height / 2 - 5 - 5
+            txt = font.render("Start", True, GREY, None)
+            tx = sx + start_button.width / 2 - 30 - 5 + 7.5 - 35 + 5
+            ty = sy + start_button.height / 2 - 5 - 5 - 6
             WINDOW.blit(txt, (tx, ty))
 
             # Creator Button
@@ -793,10 +795,10 @@ def main():
                 button2.color = (160, 160, 160)
 
             button2.render_button()
-            FONT = pygame.font.Font(None, 32)
-            txt = FONT.render("Creator", True, GREY, None)
-            tx = x + button2.width / 2 - 30 - 5
-            ty = y + button2.height / 2 - 5 - 5
+            font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
+            txt = font.render("Creator", True, GREY, None)
+            tx = x + button2.width / 2 - 30 - 5 - 10 -15 - 7.5 - 10 - 7
+            ty = y + button2.height / 2 - 5 - 5 - 5
             WINDOW.blit(txt, (tx, ty))
 
             # Tutorial Button
@@ -810,10 +812,9 @@ def main():
                 tb.color = (160, 160, 160)
 
             tb.render_button()
-            tbfontobj = pygame.font.Font(None, 32)
-            txt = tbfontobj.render("Tutorial", True, GREY, None)
-            tx = tb.x + tb.width / 2 - 30 - 5
-            ty = tb.y + tb.height / 2 - 5 - 5
+            txt = font.render("Tutorial", True, GREY, None)
+            tx = tb.x + tb.width / 2 - 30 - 5 - 35 - 24
+            ty = tb.y + tb.height / 2 - 5 - 5 - 6
             WINDOW.blit(txt, (tx, ty))
 
             # Characters Button
@@ -839,10 +840,9 @@ def main():
                 shop_button.color = (160, 160, 160)
 
             skins.render_button()
-            font3 = pygame.font.Font(None, 32)
-            text = font3.render("Shop", True, GREY, None)
-            x = skins.x + skins.width / 2 - 50 - 7.5 + 45 - 15
-            y = skins.y + skins.height / 2 - 10
+            text = font.render("Shop", True, GREY, None)
+            x = skins.x + skins.width / 2 - 50 - 7.5 + 45 - 15 - 20
+            y = skins.y + skins.height / 2 - 10 - 6
             WINDOW.blit(text, (x, y))
 
 
@@ -857,11 +857,8 @@ def main():
                     elif button2.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'creator'
                     elif tb.hitbox.collidepoint(mouse_x, mouse_y):
-                        if selected_character is None:
-                            showMessage2 = True
-                            startTime2 = pygame.time.get_ticks()
-                        else:
-                            game_state = 'tutorial_level'
+                        selected_character = "knight"
+                        game_state = 'tutorial_level'
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'shop'
 
