@@ -95,7 +95,7 @@ SAVE_FILE = os.path.join(os.path.abspath("."), "save_game.json")
 
 # overlay for all levels
 overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
-overlay.set_alpha(50)
+overlay.set_alpha(125)
 
 WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Platformer')
@@ -109,6 +109,8 @@ middle_background = pygame.image.load(resource_path('assets/x/Dark_Dungeon_6.jpg
 middle_background = pygame.transform.scale(middle_background, (800, 600))
 platform = pygame.image.load(resource_path('assets/x/platform.png')).convert_alpha()
 platform = pygame.transform.scale(platform, (200, 60))
+ground_image = pygame.image.load(resource_path('assets/x/ground.webp')).convert_alpha()
+ground_image = pygame.transform.scale(ground_image, (100, 20))
 
 # Character Images
 knight = pygame.image.load(resource_path('assets/x/KNIGHT2.png')).convert_alpha()
@@ -700,7 +702,7 @@ def main():
     # level 1 obstacles
     obstacle_list.clear()
     ob1 = pygame.Rect(290+20+20, 395 + 15, 150, 40)
-    ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH, 10)
+    ground = pygame.Rect(0, WINDOW_HEIGHT - 50, WINDOW_WIDTH, 50)
     obstacle_list = [ob1, ground]
 
     ### Portal ###
@@ -908,13 +910,12 @@ def main():
 
             pygame.display.update()
 
-        # SHOP
+        # SHOP (replace this section)
         elif game_state == "shop":
             mouse_pos = pygame.mouse.get_pos()
 
             buy_buttons, back_btn = shop.render_shop(
-                WINDOW, mouse_pos, points, knight, wizard, archer
-            )
+                WINDOW, mouse_pos, points, knight, wizard, archer)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -924,16 +925,34 @@ def main():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
 
+                    # Back button
                     if back_btn.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = "gameMenu"
-                    else:
-                        for item_name, buy_btn in buy_buttons.items():
-                            if buy_btn.hitbox.collidepoint(mouse_x, mouse_y):
-                                success, message, new_points = shop.buy(item_name, points)
-                                points = new_points
-                                shop_notice_text = message
-                                shop_notice_until = pygame.time.get_ticks() + 2000
-                                break
+
+                    # Buy buttons
+                    for item_name, btn_rect in buy_buttons.items():
+                        if btn_rect.collidepoint(mouse_x, mouse_y):
+                            success, message, new_points = shop.buy(item_name, points)
+                            points = new_points
+                            shop_notice_text = message
+                            shop_notice_until = pygame.time.get_ticks() + 2000
+                            break
+
+                    # Equip buttons
+                    for item_name, btn_rect in equip_buttons.items():
+                        if btn_rect.collidepoint(mouse_x, mouse_y):
+                            success, message = shop.equip_skin(item_name)
+                            shop_notice_text = message
+                            shop_notice_until = pygame.time.get_ticks() + 2000
+                            break
+
+            # Display notice message
+            if pygame.time.get_ticks() < shop_notice_until:
+                notice_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 20)
+                notice_surface = notice_font.render(shop_notice_text, True, (255, 215, 0))
+                WINDOW.blit(notice_surface, (WINDOW_WIDTH // 2 - notice_surface.get_width() // 2, 20))
+
+            pygame.display.update()
 
         elif game_state == 'tutorial_level':
             # Exit Button
@@ -988,19 +1007,26 @@ def main():
             player.vel_x = 0
             if keys[pygame.K_LEFT] or keys[pygame.K_a]:
                 player.vel_x = -player.move_speed
-                player.player_now = player.player_image
+                if selected_character == "wizard":
+                    player.player_now = wizard
+                elif selected_character == "archer":
+                    player.player_now = archer
+                else:  # knight
+                    player.player_now = knight
                 player.facing_left = True
             if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
                 player.vel_x = player.move_speed
-                player.player_now = player.player_flipped_image
+                if selected_character == "wizard":
+                    player.player_now = pygame.transform.flip(wizard, True, False)
+                elif selected_character == "archer":
+                    player.player_now = pygame.transform.flip(archer, True, False)
+                else:  # knight
+                    player.player_now = pygame.transform.flip(knight, True, False)
                 player.facing_left = False
             if (keys[pygame.K_UP] or keys[pygame.K_SPACE]) and player.on_ground:
                 jumping_sound.play()
                 player.vel_y = player.jump_strength
-                # coin_sound.play()
                 player.on_ground = False
-
-
 
             # --- Horizontal movement and collision ---
             player.x += player.vel_x
@@ -1153,8 +1179,6 @@ def main():
             y = 40
             WINDOW.blit(Title, (x, y))
 
-
-
             mouseClicked = False
 
             for event in pygame.event.get():
@@ -1172,7 +1196,7 @@ def main():
                 game_state = 'gameMenu'
                 creator_music_playing = False
 
-
+        # win screen
         elif game_state == 'win':
             WINDOW.fill('grey')
             font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 35)
@@ -1434,13 +1458,13 @@ def main():
             # WINDOW.blit(elf, (445, 200))
 
             # Exit Button
-            exit_button = button(600, 500 - 75, 100, 100, 'orange', 'exit', None)
+            exit_button = button(600, 500 - 75, 100+25, 100, 'orange', 'exit', None)
             exit_button.render_button()
             exitfontobj = pygame.font.Font(None, 32)
 
             # Exit Button text
             ExitText = exitfontobj.render("Continue", True, TEXT_COLOR, None)
-            x = 600 + 50 - 25
+            x = 600 + 50 - 25 - 20+10
             y = 500 - 75 + 50 - 25 + 15
 
             WINDOW.blit(ExitText, (x, y))
@@ -1482,6 +1506,7 @@ def main():
                 start_time = time.time()
                 player.player_image = knight
                 player.player_flipped_image = pygame.transform.flip(knight, True, False)
+                player.player_now = knight
                 show_message = True
                 text = "Knight was selected!"
                 # WINDOW.blit(k, (kx, ky)) # make the text stay for longer
@@ -1937,25 +1962,34 @@ def main():
                 platform_img = pygame.transform.scale(platform, (rect.width, rect.height))
 
                 if rect == ground:
-                    pygame.draw.rect(WINDOW, (80, 80, 80), rect)
+                    # Tile the ground image horizontally
+                    tile_width = ground_image.get_width()
+                    for x in range(0, rect.width, tile_width):
+                        WINDOW.blit(ground_image, (rect.x + x, rect.y))
+                    
+                    # Add dark overlay on ground
+                    ground_overlay = pygame.Surface((rect.width, rect.height))
+                    ground_overlay.fill((0, 0, 0))
+                    ground_overlay.set_alpha(255)
+                    WINDOW.blit(ground_overlay, (rect.x, rect.y))
+                else:
+                    if level == 3:
+                        if rect == ob2:
+                            platform_img.fill((128, 128, 128))
 
-                if level == 3:
-                    if rect == ob2:
-                        platform_img.fill((128, 128, 128))
+                    if level == 4:
+                        if rect == ob3:
+                            platform_img.fill((128, 128, 128))
 
-                if level == 4:
-                    if rect == ob3:
-                        platform_img.fill((128, 128, 128))
+                    if level == 5:
+                        if rect == ob2 or rect == ob4 or rect == ob5:
+                            platform_img.fill((128, 128, 128))
 
-                if level == 5:
-                    if rect == ob2 or rect == ob4 or rect == ob5:
-                        platform_img.fill((128, 128, 128))
+                    if level == 6:
+                        if rect == ob2:
+                            platform_img.fill((128, 128, 128))
 
-                if level == 6:
-                    if rect == ob2:
-                        platform_img.fill((128, 128, 128))
-
-                WINDOW.blit(platform_img, (rect.x, rect.y))
+                    WINDOW.blit(platform_img, (rect.x, rect.y))
 
             if level == 2:
                 portal_x = 680 - 100
