@@ -132,6 +132,7 @@ portal_sound = pygame.mixer.Sound(resource_path("assets/x/portal.ogg"))
 damage_sound = pygame.mixer.Sound(resource_path("assets/x/damage.ogg"))
 jumping_sound = pygame.mixer.Sound(resource_path("assets/x/jumping.ogg"))
 selected_sound = pygame.mixer.Sound(resource_path("assets/x/select.ogg"))
+click_sound = pygame.mixer.Sound(resource_path("assets/x/click_sound.ogg"))
 
 # setting up player animations to loop forever in game menu
 
@@ -449,6 +450,9 @@ class button():
 
     def render_button(self):
         pygame.draw.rect(WINDOW, self.color, self.hitbox, 0, 5)
+
+    def click(self):
+        click_sound.play()
 
 
 class Shop:
@@ -856,12 +860,16 @@ def main():
                     mouse_x, mouse_y = event.pos
                     if start_button.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = "charecter_select"
+                        start_button.click()
                     elif button2.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'creator'
+                        button2.click()
                     elif tb.hitbox.collidepoint(mouse_x, mouse_y):
+                        tb.click()
                         selected_character = "knight"
                         game_state = 'tutorial_level'
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
+                        skins.click()
                         game_state = 'shop'
 
 
@@ -973,6 +981,7 @@ def main():
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if exit_button_rect.collidepoint(mouse_pos):
+                        exit_button.click()
                         game_state = 'gameMenu'
                         level = 1
 
@@ -1136,6 +1145,7 @@ def main():
 
             # Check EXIT button click
             if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                exit_button.click()
                 game_state = 'gameMenu'
 
 
@@ -1193,6 +1203,7 @@ def main():
 
             # Check EXIT button click
             if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
+                exit_button.click()
                 game_state = 'gameMenu'
                 creator_music_playing = False
 
@@ -1484,9 +1495,11 @@ def main():
             # Check EXIT button click
             if exit_button.hitbox.collidepoint((mouse_x, mouse_y)) and mouseClicked:
                 if selected_character is None:
+                    exit_button.click()
                     skins_notice_text = "Choose a character first!"
                     skins_notice_until = pygame.time.get_ticks() + 2000
                 else:
+                    exit_button.click()
                     game_state = "cutscene"
                     level = 1
                     level_counter1.set_number(1)
@@ -1575,6 +1588,7 @@ def main():
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     if exit_button_rect.collidepoint(mouse_pos):
+                        exit_button.click()
                         game_state = 'gameMenu'
                         level = 1
 
