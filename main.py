@@ -60,6 +60,21 @@ cutscene_texts = [
     "Your only escape is forward."
 ]
 
+
+# Level 5 Completion Cutscene Variables
+level5_cutscene_active = False
+level5_cutscene_text_index = 0
+level5_cutscene_char_index = 0
+level5_cutscene_last_char_time = 0
+level5_cutscene_texts = [
+    "Who are you?",
+    "Why am I trapped here?",
+    "You will find out soon...",
+    "Until then, goodbye old friend..."
+]
+level5_cutscene_complete = False
+level5_cutscene_fade_started = False
+
 # Knight
 show_message = False
 start_time = 0
@@ -101,6 +116,10 @@ WINDOW = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption('Platformer')
 
 clock = pygame.time.Clock()
+
+# Mysterious Figure Sprite
+mysterious_figure = pygame.image.load(resource_path('assets/x/dark_figure.png')).convert_alpha()
+mysterious_figure = pygame.transform.scale(mysterious_figure, (120, 150))
 
 # Images
 background = pygame.image.load(resource_path('assets/x/background.png')).convert_alpha()
@@ -157,6 +176,56 @@ def draw_cutscene_text(text, x, y, max_chars=None):
 
     text_surface = font.render(text, True, (255, 255, 255))
     WINDOW.blit(text_surface, (x, y))
+
+# Pokemon-style dialogue box function
+def draw_pokemon_dialogue_box(text, char_index, show_continue_prompt=False, speaker=""):
+    # Dialogue box dimensions and position (smaller)
+    box_width = 500
+    box_height = 100
+    box_x = (WINDOW_WIDTH - box_width) // 2
+    box_y = WINDOW_HEIGHT - box_height - 20
+    
+    # Draw dialogue box background (grey with blue border)
+    pygame.draw.rect(WINDOW, (128, 128, 128), (box_x, box_y, box_width, box_height))
+    pygame.draw.rect(WINDOW, (0, 0, 150), (box_x, box_y, box_width, box_height), 4)
+    
+    # Draw speaker name if provided
+    if speaker:
+        speaker_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 18)
+        speaker_text = speaker_font.render(speaker + ":", True, (255, 255, 0))
+        WINDOW.blit(speaker_text, (box_x + 10, box_y + 5))
+    
+    # Draw text character by character
+    font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 20)
+    display_text = text[:char_index]
+    
+    # Word wrap
+    words = display_text.split(' ')
+    lines = []
+    current_line = ''
+    
+    for word in words:
+        test_line = current_line + word + ' '
+        if font.size(test_line)[0] < box_width - 40:
+            current_line = test_line
+        else:
+            lines.append(current_line)
+            current_line = word + ' '
+    lines.append(current_line)
+    
+    # Draw lines
+    text_y_offset = 30 if speaker else 15
+    for i, line in enumerate(lines):
+        text_surface = font.render(line, True, (0, 0, 0))
+        WINDOW.blit(text_surface, (box_x + 20, box_y + text_y_offset + i * 25))
+    
+    # Draw continue prompt (blinking indicator)
+    if show_continue_prompt:
+        current_time = pygame.time.get_ticks()
+        if (current_time // 500) % 2 == 0:  # Blink every 500ms
+            prompt_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 18)
+            prompt_text = prompt_font.render("▼", True, (0, 0, 150))
+            WINDOW.blit(prompt_text, (box_x + box_width - 30, box_y + box_height - 25))
 
 # Classes
 
@@ -319,46 +388,53 @@ class score_counter():
         return textSufaceObj
 
 
+class FadeBackground:
+    def __init__(self, screen_width, screen_height, max_alpha=255, duration=2000):
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.max_alpha = max_alpha
+        self.duration = duration
+
+        # State attributes to check current conditions
+        self.current_alpha = 0
+        self.start_time = 0
+        self.is_fading = False
+        self.fade_type = "in"
+
+        # Create the overlay surface
+        self.overlay = pygame.Surface((screen_width, screen_height))
+        self.overlay.fill((0, 0, 0))
+
+    def start_fade_in(self):
+        self.fade_type = "in"
+        self.current_alpha = 0
+        self.start_time = pygame.time.get_ticks()
+        self.is_fading = True
+
+    def update(self):
+        if self.is_fading == False:
+            return self.is_fading
+        elapsed = pygame.time.get_ticks() - self.start_time
+        progress = min(elapsed / self.duration, 1.0)
+        if self.fade_type == "in":
+            self.current_alpha = int(self.max_alpha * progress)
+        if self.fade_type == "out":
+            self.current_alpha = int(self.max_alpha * (1 - progress))
+        if progress >= 1.0:
+            self.is_fading = False
+
+    def draw(self, screen):
+        if self.current_alpha > 0:
+            self.overlay.set_alpha(self.current_alpha)
+            screen.blit(self.overlay, (0, 0))
+
+
 # pygame.draw.circle(surface, color, center_coordinates, radius, width=0)
 
 # sprite sheet?
 # spinning coin
 # spilt sprite sheet
 # fix sheet
-
-# Coin Animation Class
-class coin_animation():
-    def __init__(self, path, fw, fh, fps=10):
-        self.sprite_sheet = pygame.image.load(path).convert_alpha()
-        self.sprite_sheet = pygame.transform.scale(self.sprite_sheet, (25, 25))
-        self.frames = []
-        self.frame_index = 0
-        self.last_time = pygame.time.get_ticks()
-        self.frame_duration = 1000 / fps
-        self.fw = fw
-        self.fh = fh
-
-        width, height = self.sprite_sheet.get_size()
-
-        # Loop through sprite sheet to slice into frames
-        for y in range(0, height, fh):
-            for x in range(0, width, fw):
-                # Check if rectangle is within sprite sheet
-                if x + fw <= width and y + fh <= height:
-                    rect = pygame.Rect(x, y, fw, fh)
-                    self.frames.append(self.sprite_sheet.subsurface(rect))
-                else:
-                    # Skip if rectangle exceeds bounds
-                    pass
-
-    def get_frame(self):
-        if not self.frames:
-            return None  # or a default surface
-        now = pygame.time.get_ticks()
-        if now - self.last_time > self.frame_duration:
-            self.frame_index = (self.frame_index + 1) % len(self.frames)
-            self.last_time = now
-        return self.frames[self.frame_index]
 
 
 # Score counter
@@ -680,8 +756,12 @@ def main():
     global menu_jump_timer, menu_on_ground, menu_x_speed, menu_y_speed, menu_y, menu_x
     global jumping_sound, overlay
     global shop, shop_notice_text, shop_notice_until, skins_notice_text, skins_notice_until
+    global fade_bg, level5_cutscene_fade_started
 
     player = Player()
+    
+    # Create fade background instance
+    fade_bg = FadeBackground(WINDOW_WIDTH, WINDOW_HEIGHT, max_alpha=255, duration=3000)
 
     if selected_character == "wizard":
         player.player_now = wizard
@@ -942,14 +1022,6 @@ def main():
                         if btn_rect.collidepoint(mouse_x, mouse_y):
                             success, message, new_points = shop.buy(item_name, points)
                             points = new_points
-                            shop_notice_text = message
-                            shop_notice_until = pygame.time.get_ticks() + 2000
-                            break
-
-                    # Equip buttons
-                    for item_name, btn_rect in equip_buttons.items():
-                        if btn_rect.collidepoint(mouse_x, mouse_y):
-                            success, message = shop.equip_skin(item_name)
                             shop_notice_text = message
                             shop_notice_until = pygame.time.get_ticks() + 2000
                             break
@@ -1400,6 +1472,121 @@ def main():
                     pygame.quit()
                     sys.exit()
 
+        elif game_state == 'level5_cutscene':
+            global level5_cutscene_active, level5_cutscene_text_index, level5_cutscene_char_index, level5_cutscene_last_char_time, level5_cutscene_complete
+
+            # Draw background
+            WINDOW.blit(background, (0, 0))
+
+            # Draw mysterious figure on the right side
+            figure_x = 550
+            figure_y = 250
+            figure_float_offset = math.sin(pygame.time.get_ticks() * 0.003) * 5
+            WINDOW.blit(mysterious_figure, (figure_x, figure_y + figure_float_offset))
+
+            # Draw player on the left side (facing right toward the figure)
+            player_x = 150
+            player_y = 280
+            if selected_character == "wizard":
+                player_img = pygame.transform.flip(wizard, True, False)
+            elif selected_character == "archer":
+                player_img = pygame.transform.flip(archer, True, False)
+            else:
+                player_img = pygame.transform.flip(knight, True, False)
+            WINDOW.blit(player_img, (player_x, player_y))
+
+            # Draw interaction effect (glowing line between them)
+            interaction_alpha = int(100 + 50 * math.sin(pygame.time.get_ticks() * 0.005))
+            interaction_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+            pygame.draw.line(interaction_surface, (150, 100, 255, interaction_alpha),
+                           (player_x + 50, player_y + 30), (figure_x + 60, figure_y + 50 + figure_float_offset), 3)
+            WINDOW.blit(interaction_surface, (0, 0))
+
+            # Typewriter effect - add characters over time
+            current_time = pygame.time.get_ticks()
+            if current_time - level5_cutscene_last_char_time > 30:  # 30ms per character
+                if level5_cutscene_text_index < len(level5_cutscene_texts):
+                    if level5_cutscene_char_index < len(level5_cutscene_texts[level5_cutscene_text_index]):
+                        level5_cutscene_char_index += 1
+                        level5_cutscene_last_char_time = current_time
+
+            # Check if current line is complete
+            if level5_cutscene_text_index < len(level5_cutscene_texts):
+                line_complete = level5_cutscene_char_index >= len(level5_cutscene_texts[level5_cutscene_text_index])
+            else:
+                line_complete = True
+
+            # Draw dialogue box with speaker
+            if level5_cutscene_text_index == 0:
+                speaker = "Player"
+            elif level5_cutscene_text_index == 1:
+                speaker = "Player"
+            elif level5_cutscene_text_index == 2:
+                speaker = "Cloaked Figure"
+            elif level5_cutscene_text_index == 3:
+                speaker = "Cloaked Figure"
+            elif level5_cutscene_text_index == 4:
+                speaker = ""
+            else:
+                speaker = ""
+
+            # Only draw dialogue if index is within bounds
+            if level5_cutscene_text_index < len(level5_cutscene_texts):
+                draw_pokemon_dialogue_box(
+                    level5_cutscene_texts[level5_cutscene_text_index],
+                    level5_cutscene_char_index,
+                    show_continue_prompt=line_complete,
+                    speaker=speaker
+                )
+
+            # Update fade animation
+            fade_bg.update()
+
+            # Start fade when all dialogue is complete
+            if level5_cutscene_text_index >= len(level5_cutscene_texts) and not fade_bg.is_fading and not level5_cutscene_fade_started:
+                fade_bg.start_fade_in()
+                level5_cutscene_fade_started = True
+
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        if line_complete:
+                            # Move to next line
+                            level5_cutscene_text_index += 1
+                            level5_cutscene_char_index = 0
+
+                            # Check if cutscene is complete
+                            if level5_cutscene_text_index >= len(level5_cutscene_texts):
+                                level5_cutscene_complete = True
+                        else:
+                            # Skip to end of current line
+                            level5_cutscene_char_index = len(level5_cutscene_texts[level5_cutscene_text_index])
+
+            # If cutscene is complete and fade is done, transition to level 6
+            if level5_cutscene_complete and fade_bg.current_alpha >= 255:
+                # Reset cutscene variables
+                level5_cutscene_active = False
+                level5_cutscene_text_index = 0
+                level5_cutscene_char_index = 0
+                level5_cutscene_last_char_time = 0
+                level5_cutscene_complete = False
+                level5_cutscene_fade_started = False
+
+                # Advance to Level 6 (win state)
+                game_state = 'win'
+
+                # setting screen and background sizes less from the secret level
+                background = pygame.transform.scale(background, (800, 600))
+
+            # Draw fade overlay on top
+            fade_bg.draw(WINDOW)
+
+            pygame.display.update()
+
         elif game_state == "charecter_select":
             # title: choose your charecter
             # draw all of the characters in their boxes
@@ -1794,10 +1981,6 @@ def main():
                 ob5 = pygame.Rect(250, 400 + 20, 200 + 50 + 75, 40)
 
                 spikes.clear()
-                x = int(ob5.y + ob5.width / 2 - 100)
-                y = int(ob5.y - ob5.height)
-                spikes.append(Spike(x - 200 + 75 - 15 - 35, y))  # spike1
-                spikes.append(Spike(x + 50 - 75, y))  # spike2
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
                 # lists
@@ -1805,13 +1988,14 @@ def main():
                 obstacle_list = [ob1, ob2, ob4, ob5, ground]
 
                 # coins
-                coin3 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
-                coin3.randomize_pos()
+                coin3 = Coin(ob5.left + ob5.width / 2 - 30, ob5.top - 25 - 15)
                 coin_list.append(coin3)
 
-                coin4 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
-                coin4.randomize_pos()
+                coin4 = Coin(ob5.left + ob5.width / 2 + 20 +10-10, ob5.top - 25 - 15)
                 coin_list.append(coin4)
+
+                coin5 = Coin(ob5.left + ob5.width / 2 + 20+20+30, ob5.top - 25 - 15)
+                coin_list.append(coin5)
 
             # level 4
             if level == 4 and level_changing == True:
@@ -1819,7 +2003,7 @@ def main():
                 pygame.mixer.music.stop()
                 pygame.mixer.music.load(resource_path("assets/x/music4.ogg"))
                 pygame.mixer.music.play(-1)  # -1 makes it loop forever
-                portal = Portal(650 - 100 + 125 + 10, 150 - 75 - 25 - 25)
+                portal = Portal(650-100-15, 150)
                 # setting screen and background sizes less from the secret level
                 background = pygame.transform.scale(background, (800, 600))
 
@@ -1829,29 +2013,23 @@ def main():
                     player.player_reset = False
 
                 # platforms
-                ob1 = pygame.Rect(200, 475 - 25, 100 + 80, 40)  # spike on top
-                ob3 = pygame.Rect(ob1.x + 75 + 200, ob1.y - 75 - 25, 50, 40)  # fill with grey
-                ob4 = pygame.Rect(ob3.x + 75 + 150 - 100, ob3.y - 75 - 50, 180, 40)  # spike on top
+                ob1 = pygame.Rect(150, 450, 80, 40)
+                ob2 = pygame.Rect(ob1.x + 100 + 75, ob1.y - 50, 70, 40)
+                ob3 = pygame.Rect(ob2.x + 90, ob2.y - 50, 60, 40)
+                ob4 = pygame.Rect(ob2.x + 90+75, ob2.y - 50, 60, 40)
 
                 # spikes
                 spikes.clear()
-                spikes.append(Spike(ob1.x + ob1.width // 2, ob1.y - ob1.height))
-                spikes.append(Spike(ob4.x + ob4.width // 2, ob4.y - ob4.height))
 
                 ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
 
                 # lists
                 coin_list = []
-                obstacle_list = [ob1, ob3, ob4, ground]
+                obstacle_list = [ob1, ob2, ob4, ground]
 
                 # coins
-                coin3 = Coin(ob1.left + ob1.width / 2, ob1.top - 25 - 15)
-                coin3.randomize_pos()
+                coin3 = Coin(ob3.left + ob3.width / 2, ob3.top - 25 - 15)
                 coin_list.append(coin3)
-
-                coin4 = Coin(ob2.left + ob2.width / 2, ob2.top - 25 - 15)
-                coin4.randomize_pos()
-                coin_list.append(coin4)
 
             # level 5
             if level == 5 and level_changing == True:
@@ -1892,23 +2070,12 @@ def main():
 
             # level 6
             if level == 6 and level_changing == True:
-                game_state = 'win'
+                level5_cutscene_active = True
+                game_state = 'level5_cutscene'
                 level_changing = False
-
-                # setting screen and background sizes less from the secret level
-                background = pygame.transform.scale(background, (800, 600))
-
-                if player.player_reset == True:
-                    player.x = 100
-                    player.y = 500
-                    player.player_reset = False
-
-                ob1 = pygame.Rect(150, 500 - 50, 150, 50)
-                ob2 = pygame.Rect(ob1.x + 100 + 75, ob1.y - 50 - 50, 60, 50)  # fill with grey
-                ground = pygame.Rect(0, WINDOW_HEIGHT - 10, WINDOW_WIDTH + 400, 10)
-
-                obstacle_list = [ob1, ob2, ground]
-                coin_list = []
+                # Reset fade to start fresh
+                fade_bg.current_alpha = 0
+                fade_bg.is_fading = False
 
             horizontal_collision(player, obstacle_list)
             player.vel_y += player.gravity
