@@ -529,6 +529,7 @@ class button():
         self.state = 'Normal'
         self.hitbox = pygame.Rect(self.x, self.y, self.width, self.height)
         self.scale = 1
+        self.text_size = 25
 
     def render_button(self):
         pygame.draw.rect(WINDOW, self.color, self.hitbox, 0, 5)
@@ -536,7 +537,8 @@ class button():
     def click(self):
         click_sound.play()
 
-    def draw_text(self, text, font, button):
+    def draw_text(self, text, button):
+        font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
         txt = font.render(text, True, GREY)
         tx = button.x + button.width / 2 - txt.get_width() / 2
         ty = button.y + button.height / 2 - txt.get_height() / 2
@@ -874,7 +876,6 @@ def main():
             WINDOW.blit(title_surface, (x, y))
 
             # Start Button
-            font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
             sx = 280
             sy = 302
             start_button = button(sx, sy, button_width, button_height, (160, 160, 160), 'start', None)
@@ -882,9 +883,8 @@ def main():
             start_button.change_color(start_button)
 
             start_button.render_button()
-            font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
 
-            start_button.draw_text("Start", font, start_button)
+            start_button.draw_text("Start", start_button)
 
             # Creator Button
             x = 280
@@ -893,8 +893,7 @@ def main():
 
             button2.change_color(button2)
             button2.render_button()
-            font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
-            button2.draw_text("Creator", font, button2)
+            button2.draw_text("Creator", button2)
 
             # Tutorial Button
             x = 280
@@ -903,7 +902,7 @@ def main():
 
             tb.change_color(tb)
             tb.render_button()
-            tb.draw_text("Tutorial", font, tb)
+            tb.draw_text("Tutorial", tb)
 
             # Characters Button
             new_x = 280
@@ -923,7 +922,7 @@ def main():
                 shop_button.color = (160, 160, 160)
 
             skins.render_button()
-            skins.draw_text("Open World", font, skins)
+            skins.draw_text("Open World", skins)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
