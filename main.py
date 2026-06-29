@@ -543,6 +543,13 @@ class button():
 
         WINDOW.blit(txt, (tx, ty))
 
+    def change_color(self, button):
+        mouse_pos = pygame.mouse.get_pos()
+        if button.hitbox.collidepoint(mouse_pos):
+            button.color = (130, 130, 130)
+        else:
+            button.color = (160, 160, 160)
+
 
 class Shop:
     def __init__(self):
@@ -869,66 +876,41 @@ def main():
             # Start Button
             font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
             sx = 280
-            sy = 250 + 10 + 17.5 + 17.5 + 5 + 2
+            sy = 302
             start_button = button(sx, sy, button_width, button_height, (160, 160, 160), 'start', None)
 
-            if start_button.hitbox.collidepoint(mouse_pos):
-                start_button.color = (130, 130, 130)
-            else:
-                start_button.color = (160, 160, 160)
+            start_button.change_color(start_button)
 
             start_button.render_button()
             font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
 
-            txt = font.render("Start", True, GREY, None)
-            tx = sx + button_width/2 - txt.get_width()/2
-            ty = sy + button_height/2 - txt.get_height()/2
-
-            WINDOW.blit(txt, (tx, ty))
+            start_button.draw_text("Start", font, start_button)
 
             # Creator Button
             x = 280
-            y = 330 + 17.5 + 17.5 - 2.5
+            y = 362
             button2 = button(x, y, button_width, button_height, (160, 160, 160), 'creator', None)
-            if button2.hitbox.collidepoint(mouse_pos):
-                button2.color = (130, 130, 130)
-            else:
-                button2.color = (160, 160, 160)
 
+            button2.change_color(button2)
             button2.render_button()
             font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
-            txt = font.render("Creator", True, GREY, None)
-            tx = x + button2.width / 2 - 30 - 5 - 10 -15 - 7.5 - 10 - 7
-            ty = y + button2.height / 2 - 5 - 5 - 5
-            WINDOW.blit(txt, (tx, ty))
+            button2.draw_text("Creator", font, button2)
 
             # Tutorial Button
             x = 280
             y = 410 + 17.5
             tb = button(x, y, button_width, button_height, (160, 160, 160), 'tutorial', None)
 
-            if tb.hitbox.collidepoint(mouse_pos):
-                tb.color = (130, 130, 130)
-            else:
-                tb.color = (160, 160, 160)
-
+            tb.change_color(tb)
             tb.render_button()
-            txt = font.render("Tutorial", True, GREY, None)
-            tx = tb.x + tb.width / 2 - 30 - 5 - 35 - 24
-            ty = tb.y + tb.height / 2 - 5 - 5 - 6
-            WINDOW.blit(txt, (tx, ty))
+            tb.draw_text("Tutorial", font, tb)
 
             # Characters Button
-            x = 50 + tb.width / 3 + 150
-            y = 20
             new_x = 280
             new_y = 490
             skins = button(new_x, new_y, button_width, button_height, (160, 160, 160), 'Characters', None)
 
-            if skins.hitbox.collidepoint(mouse_pos):
-                skins.color = (130, 130, 130)
-            else:
-                skins.color = (160, 160, 160)
+            skins.change_color(skins)
 
             # Open World Button
             x_value = 280 + 100
@@ -941,11 +923,7 @@ def main():
                 shop_button.color = (160, 160, 160)
 
             skins.render_button()
-            text = font.render("Open World", True, GREY, None)
-            x = skins.x + skins.width / 2 - 50 - 7.5 + 45 - 15 - 20 - 50 - 10
-            y = skins.y + skins.height / 2 - 10 - 6
-            WINDOW.blit(text, (x, y))
-
+            skins.draw_text("Open World", font, skins)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
