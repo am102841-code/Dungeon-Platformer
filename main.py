@@ -1,4 +1,4 @@
-import pygame, sys, random, time, math, os, subprocess, json
+import pygame, sys, random, time, math, os, json
 from pygame.locals import *
 
 pygame.init()
@@ -7,8 +7,14 @@ pygame.mixer.init()
 # make the character selection after the player clicks the start button
 
 def resource_path(relative_path):
+    # Web-compatible resource path
     try:
-        base_path = sys._MEIPASS
+        # For web environment (pygbag)
+        if hasattr(sys, '_MEIPASS'):
+            base_path = sys._MEIPASS
+        else:
+            # For web, use relative paths
+            base_path = os.path.dirname(__file__) if '__file__' in dir() else os.path.abspath(".")
     except:
         base_path = os.path.abspath(".")
 
@@ -530,6 +536,13 @@ class button():
     def click(self):
         click_sound.play()
 
+    def draw_text(self, text, font, button):
+        txt = font.render(text, True, GREY)
+        tx = button.x + button.width / 2 - txt.get_width() / 2
+        ty = button.y + button.height / 2 - txt.get_height() / 2
+
+        WINDOW.blit(txt, (tx, ty))
+
 
 class Shop:
     def __init__(self):
@@ -820,7 +833,7 @@ def main():
 
         if keys[pygame.K_LCTRL] and keys[pygame.K_LSHIFT] and keys[pygame.K_r]:
             pygame.quit()
-            subprocess.call([sys.executable, __file__])
+            # subprocess.call([sys.executable, __file__])  # Not supported in web
             sys.exit()
 
         if game_state == 'gameMenu':
@@ -832,6 +845,9 @@ def main():
             mouseClicked = False
             knight_selected = True
             wizard_selected = False
+
+            button_width = 260
+            button_height = 50
 
             mouse_pos = pygame.mouse.get_pos()
 
@@ -850,13 +866,11 @@ def main():
             title_surface = title_font.render(title_text, True, TEXT_COLOR)
             WINDOW.blit(title_surface, (x, y))
 
-            test_button = button(0, 0, 100, 100, 'orange', 'hello', None)
-
             # Start Button
             font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
             sx = 280
             sy = 250 + 10 + 17.5 + 17.5 + 5 + 2
-            start_button = button(sx, sy, 200, 50, (160, 160, 160), 'start', None)
+            start_button = button(sx, sy, button_width, button_height, (160, 160, 160), 'start', None)
 
             if start_button.hitbox.collidepoint(mouse_pos):
                 start_button.color = (130, 130, 130)
@@ -867,14 +881,15 @@ def main():
             font = pygame.font.Font('assets/x/early-gameboy.ttf', 25)
 
             txt = font.render("Start", True, GREY, None)
-            tx = sx + start_button.width / 2 - 30 - 5 + 7.5 - 35 + 5
-            ty = sy + start_button.height / 2 - 5 - 5 - 6
+            tx = sx + button_width/2 - txt.get_width()/2
+            ty = sy + button_height/2 - txt.get_height()/2
+
             WINDOW.blit(txt, (tx, ty))
 
             # Creator Button
             x = 280
             y = 330 + 17.5 + 17.5 - 2.5
-            button2 = button(x, y, 200, 50, (160, 160, 160), 'creator', None)
+            button2 = button(x, y, button_width, button_height, (160, 160, 160), 'creator', None)
             if button2.hitbox.collidepoint(mouse_pos):
                 button2.color = (130, 130, 130)
             else:
@@ -890,7 +905,7 @@ def main():
             # Tutorial Button
             x = 280
             y = 410 + 17.5
-            tb = button(x, y, 200, 100 / 2, (160, 160, 160), 'tutorial', None)
+            tb = button(x, y, button_width, button_height, (160, 160, 160), 'tutorial', None)
 
             if tb.hitbox.collidepoint(mouse_pos):
                 tb.color = (130, 130, 130)
@@ -908,17 +923,17 @@ def main():
             y = 20
             new_x = 280
             new_y = 490
-            skins = button(new_x, new_y, tb.width, tb.height, (160, 160, 160), 'Characters', None)
+            skins = button(new_x, new_y, button_width, button_height, (160, 160, 160), 'Characters', None)
 
             if skins.hitbox.collidepoint(mouse_pos):
                 skins.color = (130, 130, 130)
             else:
                 skins.color = (160, 160, 160)
 
-            # Shop Button
+            # Open World Button
             x_value = 280 + 100
             y_value = 490 + 100
-            shop_button = button(x_value, y_value, tb.width, tb.height, (160, 160, 160), 'Shop', None)
+            shop_button = button(x_value, y_value, button_width, button_height, (160, 160, 160), 'Shop', None)
 
             if shop_button.hitbox.collidepoint(mouse_pos):
                 shop_button.color = (130, 130, 130)
@@ -926,8 +941,8 @@ def main():
                 shop_button.color = (160, 160, 160)
 
             skins.render_button()
-            text = font.render("Shop", True, GREY, None)
-            x = skins.x + skins.width / 2 - 50 - 7.5 + 45 - 15 - 20
+            text = font.render("Open World", True, GREY, None)
+            x = skins.x + skins.width / 2 - 50 - 7.5 + 45 - 15 - 20 - 50 - 10
             y = skins.y + skins.height / 2 - 10 - 6
             WINDOW.blit(text, (x, y))
 
@@ -938,19 +953,23 @@ def main():
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x, mouse_y = event.pos
+                    # Character Button
                     if start_button.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = "charecter_select"
                         start_button.click()
+                    # Creator Button
                     elif button2.hitbox.collidepoint(mouse_x, mouse_y):
                         game_state = 'creator'
                         button2.click()
+                    # Tutorial Button
                     elif tb.hitbox.collidepoint(mouse_x, mouse_y):
                         tb.click()
                         selected_character = "knight"
                         game_state = 'tutorial_level'
+                    # Open World Button
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
                         skins.click()
-                        game_state = 'shop'
+                        game_state = 'open_world'
 
 
             if showMessage:
@@ -999,40 +1018,8 @@ def main():
             pygame.display.update()
 
         # SHOP (replace this section)
-        elif game_state == "shop":
-            mouse_pos = pygame.mouse.get_pos()
-
-            buy_buttons, back_btn = shop.render_shop(
-                WINDOW, mouse_pos, points, knight, wizard, archer)
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_x, mouse_y = event.pos
-
-                    # Back button
-                    if back_btn.hitbox.collidepoint(mouse_x, mouse_y):
-                        game_state = "gameMenu"
-
-                    # Buy buttons
-                    for item_name, btn_rect in buy_buttons.items():
-                        if btn_rect.collidepoint(mouse_x, mouse_y):
-                            success, message, new_points = shop.buy(item_name, points)
-                            points = new_points
-                            shop_notice_text = message
-                            shop_notice_until = pygame.time.get_ticks() + 2000
-                            break
-
-            # Display notice message
-            if pygame.time.get_ticks() < shop_notice_until:
-                notice_font = pygame.font.Font(resource_path('assets/x/FONT.ttf'), 20)
-                notice_surface = notice_font.render(shop_notice_text, True, (255, 215, 0))
-                WINDOW.blit(notice_surface, (WINDOW_WIDTH // 2 - notice_surface.get_width() // 2, 20))
-
-            pygame.display.update()
+        elif game_state == "open_world":
+            pass
 
         elif game_state == 'tutorial_level':
             # Exit Button
@@ -2342,7 +2329,7 @@ def main():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         pygame.quit()
-                        subprocess.call([sys.executable, __file__])
+                        # subprocess.call([sys.executable, __file__])  # Not supported in web
                         sys.exit()
 
                         '''
@@ -2353,10 +2340,6 @@ def main():
                         player.y = 500
                         game_state = "gameMenu"
                         '''
-
-
-
-
 
         pygame.display.update()
         fpsClock.tick(FPS)
