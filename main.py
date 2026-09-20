@@ -67,20 +67,6 @@ cutscene_texts = [
 ]
 
 
-# Level 5 Completion Cutscene Variables
-level5_cutscene_active = False
-level5_cutscene_text_index = 0
-level5_cutscene_char_index = 0
-level5_cutscene_last_char_time = 0
-level5_cutscene_texts = [
-    "Who are you?",
-    "Why am I trapped here?",
-    "You will find out soon...",
-    "Until then, goodbye old friend..."
-]
-level5_cutscene_complete = False
-level5_cutscene_fade_started = False
-
 # Knight
 show_message = False
 start_time = 0
@@ -761,6 +747,82 @@ def horizontal_collision(player, Obstacle_list):
             elif player.vel_x < 0:
                 player.hitbox.left = x.right
 
+# Load level function
+
+def load_level(level_number):
+    global player
+    global obstacle_list, spikes, coin_list, portal
+    global level_counter1
+
+    # Reset level objects
+    obstacle_list = []
+    spikes = []
+    coin_list = []
+
+    # Reset player
+    player.x = 100
+    player.y = 500
+    player.vel_x = 0
+    player.vel_y = 0
+    player.on_ground = False
+    player.hitbox.topleft = (player.x, player.y+15)
+
+    # Level 1
+    if level_number == 1:
+        ob1 = pygame.Rect(330, 410, 150, 40)
+        ground = pygame.Rect(0, WINDOW_HEIGHT - 50, WINDOW_WIDTH, 50)
+
+        obstacle_list = [ob1, ground]
+
+        coin1 = Coin(ob1.left + ob1.width / 2 - 35, ob1.top - 40)
+        coin2 = Coin(ob1.left + ob1.width / 2 + 10, ob1.top - 40)
+
+        coin_list.append(coin1)
+        coin_list.append(coin2)
+
+        portal.set_position(535, 125)
+
+    level_counter1.set_number(level_number)
+
+def init_open_world(player):
+    # Reset player
+    player.x = 100
+    player.y = 450
+    player.vel_x = 0
+    player.vel_y = 0
+    player.on_ground = False
+    player.facing_left = False
+
+    # Set player image
+    if selected_character == "wizard":
+        player.player_image = wizard
+        player.player_flipped_image = pygame.transform.flip(wizard, True, False)
+
+    elif selected_character == "archer":
+        player.player_image = archer
+        player.player_flipped_image = pygame.transform.flip(archer, True, False)
+
+    else:
+        player.player_image = knight
+        player.player_flipped_image = pygame.transform.flip(knight, True, False)
+
+    player.player_now = player.player_image
+
+    player.hitbox = player.player_image.get_rect()
+    player.hitbox.height -= 15
+    player.hitbox.topleft = (player.x, player.y+15)
+
+    open_world_platforms = [
+        pygame.Rect(0, 550, WINDOW_WIDTH, 50),
+        pygame.Rect(200, 450, 200, 30),
+        pygame.Rect(500, 350, 200, 30),
+        pygame.Rect(50, 300, 150, 30),
+        pygame.Rect(600, 200, 150, 30)
+    ]
+
+    return open_world_platforms
+
+
 exit_button_rect = pygame.Rect(WINDOW_WIDTH - 125, 50, 100, 100)
 
 # The main function that controls the game
@@ -778,7 +840,7 @@ def main():
     global menu_jump_timer, menu_on_ground, menu_x_speed, menu_y_speed, menu_y, menu_x
     global jumping_sound, overlay
     global shop, shop_notice_text, shop_notice_until, skins_notice_text, skins_notice_until
-    global fade_bg, level5_cutscene_fade_started
+    global fade_bg
 
     player = Player()
     
@@ -946,6 +1008,7 @@ def main():
                     # Open World Button
                     elif skins.hitbox.collidepoint(mouse_x, mouse_y):
                         skins.click()
+                        open_world_platforms = init_open_world(player)
                         game_state = 'open_world'
 
 
@@ -994,9 +1057,88 @@ def main():
 
             pygame.display.update()
 
-        # SHOP (replace this section)
         elif game_state == "open_world":
-            pass
+            WINDOW.fill((120, 180, 120))
+
+            keys = pygame.key.get_pressed()
+
+            player.vel_x = 0
+
+            if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+                player.vel_x = -player.move_speed
+                player.player_now = player.player_image
+                player.facing_left = True
+
+            if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+                player.vel_x = player.move_speed
+                player.player_now = player.player_flipped_image
+                player.facing_left = False
+
+            if (keys[pygame.K_UP] or keys[pygame.K_SPACE]) and player.on_ground:
+                jumping_sound.play()
+                player.vel_y = player.jump_strength
+                player.on_ground = False
+
+            player.x += player.vel_x
+            player.hitbox.topleft = (player.x, player.y+15)
+
+            horizontal_collision(player, open_world_platforms)
+            player.x = player.hitbox.x
+
+            player.vel_y += player.gravity
+            player.y += int(player.vel_y)
+
+            player.hitbox.topleft = (player.x, player.y+15)
+
+            player.on_ground = False
+
+            for platform_rect in open_world_platforms:
+                if player.hitbox.colliderect(platform_rect):
+
+                    if player.vel_y > 0:
+                        player.y = platform_rect.top - player.hitbox.height - 15
+                        player.vel_y = 0
+                        player.on_ground = True
+
+                    elif player.vel_y < 0:
+                        player.y = platform_rect.bottom - 15
+                        player.vel_y = 0
+
+            if player.x < 0:
+                player.x = 0
+
+            if player.x + player.hitbox.width > WINDOW_WIDTH:
+                player.x = WINDOW_WIDTH - player.hitbox.width
+
+            player.hitbox.topleft = (player.x, player.y+15)
+
+            for platform_rect in open_world_platforms:
+                pygame.draw.rect(
+                    WINDOW,
+                    (80, 80, 80),
+                    platform_rect
+                )
+
+            WINDOW.blit(
+                player.player_now,
+                (player.x, player.y + 25)
+            )
+
+            font = pygame.font.Font(
+                resource_path('assets/x/FONT.ttf'),
+                20
+            )
+
+            open_world_text = font.render(
+                "OPEN WORLD - Explore!",
+                True,
+                (255, 255, 255)
+            )
+
+            WINDOW.blit(open_world_text, (20, 20))
+
+            pygame.display.update()
+            fpsClock.tick(FPS)
 
         elif game_state == 'tutorial_level':
             # Exit Button
@@ -1436,112 +1578,6 @@ def main():
                     pygame.quit()
                     sys.exit()
 
-        elif game_state == 'level5_cutscene':
-            global level5_cutscene_active, level5_cutscene_text_index, level5_cutscene_char_index, level5_cutscene_last_char_time, level5_cutscene_complete
-
-            # Draw background
-            WINDOW.blit(background, (0, 0))
-
-            # Draw mysterious figure on the right side
-            figure_x = 550
-            figure_y = 250
-            figure_float_offset = math.sin(pygame.time.get_ticks() * 0.003) * 5
-            WINDOW.blit(mysterious_figure, (figure_x, figure_y + figure_float_offset))
-
-            # Draw player on the left side (facing right toward the figure)
-            player_x = 150
-            player_y = 280
-            if selected_character == "wizard":
-                player_img = pygame.transform.flip(wizard, True, False)
-            elif selected_character == "archer":
-                player_img = pygame.transform.flip(archer, True, False)
-            else:
-                player_img = pygame.transform.flip(knight, True, False)
-            WINDOW.blit(player_img, (player_x, player_y))
-
-            # Draw interaction effect (glowing line between them)
-            interaction_alpha = int(100 + 50 * math.sin(pygame.time.get_ticks() * 0.005))
-            interaction_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
-            pygame.draw.line(interaction_surface, (150, 100, 255, interaction_alpha),
-                           (player_x + 50, player_y + 30), (figure_x + 60, figure_y + 50 + figure_float_offset), 3)
-            WINDOW.blit(interaction_surface, (0, 0))
-
-            # Typewriter effect - add characters over time
-            current_time = pygame.time.get_ticks()
-            if current_time - level5_cutscene_last_char_time > 30:  # 30ms per character
-                if level5_cutscene_text_index < len(level5_cutscene_texts):
-                    if level5_cutscene_char_index < len(level5_cutscene_texts[level5_cutscene_text_index]):
-                        level5_cutscene_char_index += 1
-                        level5_cutscene_last_char_time = current_time
-
-            # Check if current line is complete
-            if level5_cutscene_text_index < len(level5_cutscene_texts):
-                line_complete = level5_cutscene_char_index >= len(level5_cutscene_texts[level5_cutscene_text_index])
-            else:
-                line_complete = True
-
-            # Draw dialogue box with speaker
-            if level5_cutscene_text_index == 0:
-                speaker = "Player"
-            elif level5_cutscene_text_index == 1:
-                speaker = "Player"
-            elif level5_cutscene_text_index == 2:
-                speaker = "Cloaked Figure"
-            elif level5_cutscene_text_index == 3:
-                speaker = "Cloaked Figure"
-            elif level5_cutscene_text_index == 4:
-                speaker = ""
-            else:
-                speaker = ""
-
-            # Only draw dialogue if index is within bounds
-            if level5_cutscene_text_index < len(level5_cutscene_texts):
-                draw_pokemon_dialogue_box(
-                    level5_cutscene_texts[level5_cutscene_text_index],
-                    level5_cutscene_char_index,
-                    show_continue_prompt=line_complete,
-                    speaker=speaker
-                )
-
-            # Update fade animation
-            fade_bg.update()
-
-            # Start fade when all dialogue is complete
-            if level5_cutscene_text_index >= len(level5_cutscene_texts) and not fade_bg.is_fading and not level5_cutscene_fade_started:
-                fade_bg.start_fade_in()
-                level5_cutscene_fade_started = True
-
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        if line_complete:
-                            # Move to next line
-                            level5_cutscene_text_index += 1
-                            level5_cutscene_char_index = 0
-
-                            # Check if cutscene is complete
-                            if level5_cutscene_text_index >= len(level5_cutscene_texts):
-                                level5_cutscene_complete = True
-                        else:
-                            # Skip to end of current line
-                            level5_cutscene_char_index = len(level5_cutscene_texts[level5_cutscene_text_index])
-
-            # If cutscene is complete and fade is done, transition to level 6
-            if level5_cutscene_complete and fade_bg.current_alpha >= 255:
-                # Reset cutscene variables
-                level5_cutscene_active = False
-                level5_cutscene_text_index = 0
-                level5_cutscene_char_index = 0
-                level5_cutscene_last_char_time = 0
-                level5_cutscene_complete = False
-                level5_cutscene_fade_started = False
-
-                # Advance to Level 6 (win state)
-                game_state = 'win'
 
                 # setting screen and background sizes less from the secret level
                 background = pygame.transform.scale(background, (800, 600))
@@ -2034,12 +2070,8 @@ def main():
 
             # level 6
             if level == 6 and level_changing == True:
-                level5_cutscene_active = True
-                game_state = 'level5_cutscene'
+                game_state = 'win'
                 level_changing = False
-                # Reset fade to start fresh
-                fade_bg.current_alpha = 0
-                fade_bg.is_fading = False
 
             horizontal_collision(player, obstacle_list)
             player.vel_y += player.gravity
