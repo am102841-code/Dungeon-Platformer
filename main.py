@@ -720,6 +720,25 @@ class CreatorCard:
                 y += 22
 
 
+class Camera():
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+        self.scroll = [0, 0]
+        self.window_width = WINDOW_WIDTH
+        self.window_height = WINDOW_HEIGHT
+        self.camera_speed = 5
+
+    def update(self, player):
+        target_camera_x = player.x - WINDOW_WIDTH/2
+        if self.x > target_camera_x:
+            self.x -= self.camera_speed
+        if self.x < target_camera_x:
+            self.x += self.camera_speed
+
+
+
+
 creator_cards = [
     CreatorCard(90-20-25, 180, "About Me", "Indie dev + student-athlete", [
         "Built this game over 2 years",
@@ -843,6 +862,7 @@ def main():
     global fade_bg
 
     player = Player()
+    camera = Camera() 
     
     # Create fade background instance
     fade_bg = FadeBackground(WINDOW_WIDTH, WINDOW_HEIGHT, max_alpha=255, duration=3000)
@@ -1111,6 +1131,7 @@ def main():
                 player.x = WINDOW_WIDTH - player.hitbox.width
 
             player.hitbox.topleft = (player.x, player.y+15)
+            camera.update(player)
 
             for platform_rect in open_world_platforms:
                 pygame.draw.rect(
